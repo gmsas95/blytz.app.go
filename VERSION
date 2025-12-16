@@ -1,21 +1,26 @@
-2.0.0
+3.0.0
 
-Release Date: December 16, 2025
-Milestone: Phase 3 Complete - Product Management System
+Release Date: December 17, 2025
+Milestone: Phase 5A Complete - Shopping Cart & Order Management System
 
 Features:
 - ✅ Backend Foundation (Clean Architecture, Database, Redis, Middleware)
 - ✅ Authentication System (JWT, User Management, Security, Rate Limiting)
 - ✅ Product Management (CRUD Operations, Advanced Filtering, Price Management)
+- ✅ Shopping Cart (Guest Support, Cart Merging, 7-Day Expiration)
+- ✅ Order Management (Status Workflow, Admin Dashboard, Pricing Logic)
 
-New in v2.0.0:
-- Complete Product CRUD Operations
-- Advanced Filtering and Search System
-- Comprehensive Price Management (3-tier pricing)
-- Product Status Workflow Management
-- View Count Tracking with Owner Exclusion
-- JSON Field Support for Flexible Data
-- Professional Pagination and Sorting
-- Business Logic Protection
+New in v3.0.0:
+- Complete Shopping Cart System (8 API endpoints)
+- Order Management Framework (6 API endpoints)
+- Guest Cart Support with Token Authentication
+- 7-Day Cart Expiration System
+- Cart Merging Functionality
+- Professional Order Status Workflow
+- Admin Dashboard with Statistics
+- Comprehensive Address Management
+- Real-time Cart Total Calculations
+- Stock Reservation System
+- Role-Based Order Management
 
-Next: Phase 4 - Auction System
+Next: Phase 5B - Payment Processing & Address Management
