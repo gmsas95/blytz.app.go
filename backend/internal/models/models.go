@@ -56,3 +56,65 @@ type Product struct {
 	Featured      bool      `gorm:"default:false" json:"featured"`
 	ViewCount     int       `gorm:"default:0" json:"view_count"`
 }
+
+// Order represents a customer order
+type Order struct {
+	common.BaseModel
+	UserID          uuid.UUID  `gorm:"not null;references:ID" json:"user_id"`
+	Status          string     `gorm:"not null;default:'pending'" json:"status"` // pending, processing, shipped, delivered, cancelled
+	TotalAmount     float64    `gorm:"not null" json:"total_amount"`
+	Subtotal        float64    `gorm:"not null" json:"subtotal"`
+	TaxAmount       float64    `gorm:"default:0" json:"tax_amount"`
+	ShippingCost    float64    `gorm:"default:0" json:"shipping_cost"`
+	DiscountAmount  float64    `gorm:"default:0" json:"discount_amount"`
+	ShippingAddress *Address   `gorm:"embedded;embeddedPrefix:shipping_" json:"shipping_address"`
+	BillingAddress  *Address   `gorm:"embedded;embeddedPrefix:billing_" json:"billing_address"`
+	PaymentID       *uuid.UUID `gorm:"references:ID" json:"payment_id"`
+	TrackingNumber  *string    `json:"tracking_number"`
+	Notes           *string    `json:"notes"`
+	Items          []OrderItem `gorm:"foreignKey:OrderID" json:"items,omitempty"`
+}
+
+// OrderItem represents items in an order
+type OrderItem struct {
+	common.BaseModel
+	OrderID     uuid.UUID `gorm:"not null;references:ID" json:"order_id"`
+	ProductID   uuid.UUID `gorm:"not null;references:ID" json:"product_id"`
+	Quantity    int        `gorm:"not null" json:"quantity"`
+	UnitPrice   float64    `gorm:"not null" json:"unit_price"`
+	Total       float64    `gorm:"not null" json:"total"`
+	Product     Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+}
+
+// Address represents shipping/billing address (embedded)
+type Address struct {
+	FirstName    string  `json:"first_name"`
+	LastName     string  `json:"last_name"`
+	Company      *string `json:"company"`
+	AddressLine1 string  `json:"address_line1"`
+	AddressLine2 *string `json:"address_line2"`
+	City         string  `json:"city"`
+	State        string  `json:"state"`
+	PostalCode   string  `json:"postal_code"`
+	Country      string  `json:"country"`
+	Phone        *string `json:"phone"`
+}
+
+// Cart represents a shopping cart
+type Cart struct {
+	common.BaseModel
+	UserID    *uuid.UUID `gorm:"references:ID" json:"user_id,omitempty"`
+	Token      string     `gorm:"uniqueIndex" json:"token"`
+	ExpiresAt  time.Time  `gorm:"not null" json:"expires_at"`
+	Items      []CartItem `gorm:"foreignKey:CartID" json:"items,omitempty"`
+}
+
+// CartItem represents items in a cart
+type CartItem struct {
+	common.BaseModel
+	CartID    uuid.UUID `gorm:"not null;references:ID" json:"cart_id"`
+	ProductID uuid.UUID `gorm:"not null;references:ID" json:"product_id"`
+	Quantity   int        `gorm:"not null" json:"quantity"`
+	AddedAt    time.Time  `gorm:"autoCreateTime" json:"added_at"`
+	Product    Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+}

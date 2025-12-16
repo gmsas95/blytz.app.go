@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/blytz.live.remake/backend/internal/auth"
+	"github.com/blytz.live.remake/backend/internal/cart"
 	"github.com/blytz.live.remake/backend/internal/common"
 	"github.com/blytz.live.remake/backend/internal/config"
 	"github.com/blytz.live.remake/backend/internal/database"
 	"github.com/blytz.live.remake/backend/internal/middleware"
 	"github.com/blytz.live.remake/backend/internal/models"
+	"github.com/blytz.live.remake/backend/internal/orders"
 	"github.com/blytz.live.remake/backend/internal/products"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -49,6 +51,10 @@ func main() {
 				&models.User{},
 				&models.Category{},
 				&models.Product{},
+				&models.Cart{},
+				&models.CartItem{},
+				&models.Order{},
+				&models.OrderItem{},
 			)
 			if err != nil {
 				log.Printf("Warning: Failed to auto-migrate database: %v", err)
@@ -125,9 +131,13 @@ func main() {
 		})
 	})
 
-	// Initialize auth components if database is available
+		// Initialize auth components if database is available
 	var authHandler *auth.Handler
 	var productHandler *products.Handler
+	var cartHandler *cart.Handler
+	var orderHandler *orders.Handler
+	var cartService *cart.Service
+	var orderService *orders.Service
 	if db != nil {
 		log.Println("✅ Database available - Initializing authentication system")
 		
@@ -143,6 +153,14 @@ func main() {
 		// Initialize product service and handler
 		productService := products.NewService(db)
 		productHandler = products.NewHandler(productService)
+		
+		// Initialize cart service and handler
+		cartService = cart.NewService(db)
+		cartHandler = cart.NewHandler(cartService)
+		
+		// Initialize order service and handler
+		orderService = orders.NewService(db, cartService)
+		orderHandler = orders.NewHandler(orderService)
 
 		// API v1 routes
 		v1 := router.Group("/api/v1")
@@ -163,6 +181,14 @@ func main() {
 			productsGroup.GET("/:id", productHandler.GetProduct)
 		}
 
+		// Public cart routes (with middleware)
+		cartGroup := v1.Group("/cart")
+		cartGroup.Use(cart.CartMiddleware(cartService))
+		{
+			cartGroup.GET("", cartHandler.GetCart)
+			cartGroup.POST("", cartHandler.CreateCart)
+		}
+
 		// Protected routes
 		protected := v1.Group("/")
 		protected.Use(authHandler.RequireAuth())
@@ -179,6 +205,34 @@ func main() {
 				productsGroup.PUT("/:id", productHandler.UpdateProduct)
 				productsGroup.DELETE("/:id", productHandler.DeleteProduct)
 				productsGroup.GET("/my-products", productHandler.ListSellerProducts)
+			}
+			
+			// Protected cart routes
+			cartGroup = protected.Group("/cart")
+			cartGroup.Use(cart.CartMiddleware(cartService))
+			{
+				cartGroup.POST("/items", cartHandler.AddItem)
+				cartGroup.PUT("/items/:id", cartHandler.UpdateItem)
+				cartGroup.DELETE("/items/:id", cartHandler.RemoveItem)
+				cartGroup.DELETE("", cartHandler.ClearCart)
+				cartGroup.POST("/merge", cartHandler.MergeCart)
+			}
+			
+			// Order routes
+			ordersGroup := protected.Group("/orders")
+			{
+				ordersGroup.POST("", orderHandler.CreateOrder)
+				ordersGroup.GET("", orderHandler.ListOrders)
+				ordersGroup.GET("/:id", orderHandler.GetOrder)
+				ordersGroup.PUT("/:id/status", orderHandler.UpdateOrderStatus) // Admin/seller
+				ordersGroup.DELETE("/:id", orderHandler.CancelOrder)
+			}
+			
+			// Admin routes
+			admin := protected.Group("/admin")
+			admin.Use(auth.RequireRole("admin"))
+			{
+				admin.GET("/orders/statistics", orderHandler.GetOrderStatistics)
 			}
 		}
 

@@ -73,11 +73,349 @@ Features to implement:
 - Winner determination
 - Auto-bid functionality
 
-### Phase 5: Live Streaming 📋 PLANNED
+### Phase 5: Basic E-commerce System 📋 PLANNED
 Target Start: After Phase 4
+Timeline: ~14-19 days
+Features to implement:
+- Shopping cart system (Cart, CartItem models)
+- Order management system (Order, OrderItem models)
+- Basic payment processing (Payment model + Stripe integration)
+- Address management (UserAddress model)
+- Inventory management (Stock, StockReservation models)
+- Tax and shipping calculations
+- Order status tracking (pending, processing, shipped, delivered, cancelled)
+
+**API Endpoints to Implement:**
+- Cart: GET /api/v1/cart, POST /api/v1/cart/items, PUT /api/v1/cart/items/:id, DELETE /api/v1/cart/items/:id
+- Orders: POST /api/v1/orders, GET /api/v1/orders, GET /api/v1/orders/:id
+- Payments: POST /api/v1/payments/intent, POST /api/v1/payments/confirm, GET /api/v1/payments/:id
+- Addresses: GET /api/v1/addresses, POST /api/v1/addresses, PUT /api/v1/addresses/:id, DELETE /api/v1/addresses/:id
+
+### Phase 6: Live Streaming 📋 PLANNED
+Target Start: After Phase 5
 - LiveKit integration
 - Video streaming capabilities
 - Live chat during auctions
+
+## E-commerce Implementation Plan
+
+### E-commerce Architecture Overview
+
+The e-commerce system will be built as an extension to the existing backend architecture, maintaining the same clean architecture principles and modular design.
+
+### Module Structure for E-commerce
+
+```
+internal/
+├── cart/                           # Shopping Cart Module
+│   ├── models.go                    # Cart, CartItem DTOs
+│   ├── service.go                   # Cart business logic
+│   └── handlers.go                  # Cart HTTP handlers
+├── orders/                         # Order Management Module
+│   ├── models.go                    # Order, OrderItem, OrderStatus
+│   ├── service.go                   # Order business logic
+│   └── handlers.go                  # Order HTTP handlers
+├── payments/                       # Payment Processing Module
+│   ├── models.go                    # Payment, PaymentMethod, Transaction
+│   ├── service.go                   # Payment business logic
+│   └── handlers.go                  # Payment HTTP handlers
+├── addresses/                      # Address Management Module
+│   ├── models.go                    # UserAddress, AddressType
+│   ├── service.go                   # Address business logic
+│   └── handlers.go                  # Address HTTP handlers
+└── inventory/                      # Inventory Management Module
+    ├── models.go                    # Stock, StockReservation
+    ├── service.go                   # Inventory business logic
+    └── handlers.go                  # Inventory HTTP handlers
+```
+
+### Database Schema for E-commerce
+
+#### Order Management Tables
+```go
+// Order represents a customer order
+type Order struct {
+    ID              uuid.UUID      `gorm:"primaryKey;type:uuid" json:"id"`
+    UserID          uuid.UUID      `gorm:"not null;references:ID" json:"user_id"`
+    Status          string         `gorm:"not null;default:'pending'" json:"status"` // pending, processing, shipped, delivered, cancelled
+    TotalAmount     float64        `gorm:"not null" json:"total_amount"`
+    Subtotal        float64        `gorm:"not null" json:"subtotal"`
+    TaxAmount       float64        `gorm:"default:0" json:"tax_amount"`
+    ShippingCost    float64        `gorm:"default:0" json:"shipping_cost"`
+    DiscountAmount  float64        `gorm:"default:0" json:"discount_amount"`
+    ShippingAddress *Address       `gorm:"embedded;embeddedPrefix:shipping_" json:"shipping_address"`
+    BillingAddress  *Address       `gorm:"embedded;embeddedPrefix:billing_" json:"billing_address"`
+    PaymentID       *uuid.UUID     `gorm:"references:ID" json:"payment_id"`
+    TrackingNumber  *string        `json:"tracking_number"`
+    Notes           *string        `json:"notes"`
+    common.BaseModel                 // ID, CreatedAt, UpdatedAt, DeletedAt
+}
+
+// OrderItem represents items in an order
+type OrderItem struct {
+    ID          uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    OrderID     uuid.UUID  `gorm:"not null;references:ID" json:"order_id"`
+    ProductID   uuid.UUID  `gorm:"not null;references:ID" json:"product_id"`
+    Quantity    int        `gorm:"not null" json:"quantity"`
+    UnitPrice   float64    `gorm:"not null" json:"unit_price"`
+    Total       float64    `gorm:"not null" json:"total"`
+    Product     Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+    common.BaseModel
+}
+```
+
+#### Shopping Cart Tables
+```go
+// Cart represents a shopping cart
+type Cart struct {
+    ID     uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    UserID *uuid.UUID `gorm:"references:ID" json:"user_id,omitempty"` // nullable for guest carts
+    Token  string     `gorm:"uniqueIndex;not null" json:"token"`    // for guest carts
+    ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
+    Items  []CartItem `gorm:"foreignKey:CartID" json:"items"`
+    common.BaseModel
+}
+
+// CartItem represents items in a cart
+type CartItem struct {
+    ID        uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    CartID     uuid.UUID  `gorm:"not null;references:ID" json:"cart_id"`
+    ProductID  uuid.UUID  `gorm:"not null;references:ID" json:"product_id"`
+    Quantity   int        `gorm:"not null" json:"quantity"`
+    AddedAt    time.Time  `gorm:"autoCreateTime" json:"added_at"`
+    Product    Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+    common.BaseModel
+}
+```
+
+#### Payment Processing Tables
+```go
+// Payment represents a payment transaction
+type Payment struct {
+    ID             uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    OrderID        uuid.UUID  `gorm:"not null;references:ID" json:"order_id"`
+    PaymentMethod  string     `gorm:"not null" json:"payment_method"` // stripe, paypal, credit_card
+    Amount         float64    `gorm:"not null" json:"amount"`
+    Currency       string     `gorm:"not null;default:'USD'" json:"currency"`
+    Status         string     `gorm:"default:'pending'" json:"status"` // pending, processing, completed, failed, refunded
+    TransactionID  string     `gorm:"uniqueIndex" json:"transaction_id"`
+    GatewayRef     string     `json:"gateway_ref"` // stripe_payment_id, paypal_id, etc.
+    FailureReason  *string    `json:"failure_reason"`
+    RefundedAmount float64    `gorm:"default:0" json:"refunded_amount"`
+    common.BaseModel
+}
+
+// PaymentMethod represents a user's saved payment method
+type PaymentMethod struct {
+    ID         uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    UserID     uuid.UUID  `gorm:"not null;references:ID" json:"user_id"`
+    Type       string     `gorm:"not null" json:"type"` // credit_card, paypal, bank_account
+    Provider   string     `gorm:"not null" json:"provider"` // stripe, paypal, etc.
+    MethodRef  string     `gorm:"not null" json:"method_ref"` // tokenized reference
+    IsDefault  bool       `gorm:"default:false" json:"is_default"`
+    Last4      *string    `json:"last4"`
+    ExpiryDate *time.Time `json:"expiry_date"`
+    common.BaseModel
+}
+```
+
+#### Address Management Tables
+```go
+// Address represents a user's shipping/billing address
+type Address struct {
+    ID          uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    UserID      uuid.UUID  `gorm:"not null;references:ID" json:"user_id"`
+    Type        string     `gorm:"not null" json:"type"` // shipping, billing
+    Label       string     `gorm:"not null" json:"label"` // Home, Work, etc.
+    FirstName   string     `gorm:"not null" json:"first_name"`
+    LastName    string     `gorm:"not null" json:"last_name"`
+    Company     *string    `json:"company"`
+    AddressLine1 string     `gorm:"not null" json:"address_line1"`
+    AddressLine2 *string   `json:"address_line2"`
+    City        string     `gorm:"not null" json:"city"`
+    State       string     `gorm:"not null" json:"state"`
+    PostalCode  string     `gorm:"not null" json:"postal_code"`
+    Country     string     `gorm:"not null" json:"country"`
+    Phone       *string    `json:"phone"`
+    IsDefault   bool       `gorm:"default:false" json:"is_default"`
+    common.BaseModel
+}
+```
+
+#### Inventory Management Tables
+```go
+// Stock represents product inventory
+type Stock struct {
+    ID            uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    ProductID     uuid.UUID  `gorm:"not null;uniqueIndex;references:ID" json:"product_id"`
+    Quantity      int        `gorm:"not null;default:0" json:"quantity"`
+    Reserved      int        `gorm:"not null;default:0" json:"reserved"` // reserved in carts
+    Available     int        `gorm:"not null;default:0" json:"available"` // calculated field
+    LowStockAlert int        `gorm:"default:10" json:"low_stock_alert"`
+    LastUpdated   time.Time   `gorm:"autoUpdateTime" json:"last_updated"`
+    common.BaseModel
+}
+
+// StockReservation represents stock reserved in carts
+type StockReservation struct {
+    ID        uuid.UUID  `gorm:"primaryKey;type:uuid" json:"id"`
+    StockID   uuid.UUID  `gorm:"not null;references:ID" json:"stock_id"`
+    CartID    *uuid.UUID `gorm:"references:ID" json:"cart_id"`
+    OrderID   *uuid.UUID `gorm:"references:ID" json:"order_id"`
+    Quantity  int        `gorm:"not null" json:"quantity"`
+    ExpiresAt time.Time   `gorm:"not null" json:"expires_at"`
+    common.BaseModel
+}
+```
+
+### E-commerce API Design
+
+#### Cart Management API
+```
+GET    /api/v1/cart              # Get user's cart or guest cart by token
+POST   /api/v1/cart              # Create new cart (guest)
+POST   /api/v1/cart/items        # Add item to cart
+PUT    /api/v1/cart/items/:id     # Update item quantity
+DELETE /api/v1/cart/items/:id     # Remove item from cart
+DELETE /api/v1/cart              # Clear entire cart
+POST   /api/v1/cart/merge        # Merge guest cart to user cart
+```
+
+#### Order Management API
+```
+POST   /api/v1/orders            # Create order from cart
+GET    /api/v1/orders            # List user orders with pagination
+GET    /api/v1/orders/:id        # Get order details
+PUT    /api/v1/orders/:id/cancel # Cancel order (user)
+PUT    /api/v1/orders/:id/status # Update order status (admin/seller)
+GET    /api/v1/orders/:id/tracking # Get tracking info
+```
+
+#### Payment Processing API
+```
+POST   /api/v1/payments/intent   # Create payment intent (Stripe)
+POST   /api/v1/payments/confirm  # Confirm payment processing
+GET    /api/v1/payments/:id       # Get payment status
+POST   /api/v1/payments/refund    # Process refund (admin)
+GET    /api/v1/payments/methods   # Get user's saved payment methods
+POST   /api/v1/payments/methods   # Save new payment method
+DELETE /api/v1/payments/methods/:id # Remove payment method
+```
+
+#### Address Management API
+```
+GET    /api/v1/addresses         # Get user addresses
+POST   /api/v1/addresses         # Add new address
+GET    /api/v1/addresses/:id     # Get specific address
+PUT    /api/v1/addresses/:id     # Update address
+DELETE /api/v1/addresses/:id     # Delete address
+PUT    /api/v1/addresses/:id/default # Set as default address
+```
+
+#### Inventory Management API
+```
+GET    /api/v1/inventory/products/:id # Get product stock info
+PUT    /api/v1/inventory/products/:id # Update stock levels (admin)
+GET    /api/v1/inventory/low-stock  # Get low stock products (admin)
+GET    /api/v1/inventory/reservations # Get stock reservations (admin)
+```
+
+### Implementation Priority and Timeline
+
+#### Priority 1: Shopping Cart (3-4 days)
+- Cart creation and management
+- Item operations (add, update, remove)
+- Guest cart support with tokens
+- Cart persistence and expiration
+- Guest cart merging on login
+
+#### Priority 2: Order Management (4-5 days)
+- Order creation from cart
+- Order status tracking
+- Order history and details
+- Order cancellation
+- Admin order management
+
+#### Priority 3: Payment Processing (3-4 days)
+- Stripe integration for payments
+- Payment intent creation
+- Payment confirmation and webhooks
+- Basic refund processing
+- Payment method saving
+
+#### Priority 4: Address Management (2-3 days)
+- Address CRUD operations
+- Default address selection
+- Address validation
+- Guest checkout addresses
+
+#### Priority 5: Inventory Management (2-3 days)
+- Stock tracking and reservation
+- Stock updates on purchase
+- Low stock alerts
+- Admin stock management
+
+**Total Estimated Timeline: 14-19 days**
+
+### Payment Gateway Integration
+
+#### Stripe Integration
+```go
+// Stripe service interface
+type StripeService interface {
+    CreatePaymentIntent(amount int64, currency string, metadata map[string]string) (*stripe.PaymentIntent, error)
+    ConfirmPaymentIntent(paymentIntentID string) (*stripe.PaymentIntent, error)
+    ProcessRefund(chargeID string, amount int64) (*stripe.Refund, error)
+    CreateCustomer(email string, name string) (*stripe.Customer, error)
+    AttachPaymentMethod(customerID string, paymentMethodID string) (*stripe.PaymentMethod, error)
+}
+```
+
+#### Webhook Endpoints
+```go
+// Webhook handlers for payment confirmations
+POST /api/v1/webhooks/stripe    # Stripe webhook endpoint
+// Events: payment_intent.succeeded, payment_intent.payment_failed, charge.dispute.created
+```
+
+### Security Considerations for E-commerce
+
+1. **Payment Security**
+   - PCI compliance considerations
+   - Secure handling of payment data
+   - Use of payment gateway tokens instead of raw card data
+
+2. **Order Security**
+   - Order ownership validation
+   - Secure order status transitions
+   - Protection against order manipulation
+
+3. **Cart Security**
+   - Cart ownership validation
+   - Prevent cart manipulation
+   - Secure guest cart tokens
+
+4. **Address Security**
+   - Address ownership validation
+   - PII protection
+   - Secure address storage
+
+### Performance Considerations
+
+1. **Database Optimization**
+   - Proper indexing on frequently queried fields
+   - Optimized queries for order history
+   - Cart item count optimization
+
+2. **Caching Strategy**
+   - Redis for cart sessions
+   - Product stock caching
+   - User preference caching
+
+3. **Scalability**
+   - Async payment processing
+   - Inventory reservation timeouts
+   - Order processing queue
 
 ## Architecture Vision
 
@@ -124,13 +462,34 @@ blytz-live-latest/
 │   │   │   ├── models.go
 │   │   │   ├── repository.go
 │   │   │   └── service.go
-│   │   ├── products/
-│   │   ├── orders/
-│   │   ├── auctions/
-│   │   ├── payments/
-│   │   ├── chat/
-│   │   ├── livekit/
-│   │   ├── logistics/
+│   │   ├── products/                # Product module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── cart/                    # Shopping cart module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── orders/                  # Order management module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── payments/                # Payment processing module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── addresses/               # Address management module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── inventory/              # Inventory management module
+│   │   │   ├── handlers.go
+│   │   │   ├── models.go
+│   │   │   └── service.go
+│   │   ├── auctions/                # Auction system module
+│   │   ├── chat/                   # Chat module
+│   │   ├── livekit/                # LiveKit integration module
+│   │   └── logistics/              # Logistics module
 │   │   ├── config/                  # Configuration
 │   │   ├── middleware/              # HTTP middleware
 │   │   ├── database/               # Database setup
@@ -393,9 +752,13 @@ Key environment variables to configure:
 
 ### Business Metrics
 - User engagement: 10+ minutes average session
-- Conversion rate: 5%+ auction participation
+- Conversion rate: 5%+ auction participation / 3%+ purchase conversion
 - Mobile adoption: 40%+ traffic from mobile
 - Customer satisfaction: 4.5+ star rating
+- Cart abandonment rate: <60% (industry average)
+- Average order value: $75+ target
+- Payment success rate: 95%+
+- Order fulfillment time: <48 hours average
 
 ## Before You Start
 
