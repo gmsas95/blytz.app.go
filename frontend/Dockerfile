@@ -1,4 +1,4 @@
-# Frontend Dockerfile - Node.js Production Server (Fixed)
+# Frontend Dockerfile - Node.js Production Server (Fixed Dependencies)
 FROM node:18-alpine AS builder
 
 # Set working directory
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (fixed - using --legacy-peer-deps)
+RUN npm ci --legacy-peer-deps
 
 # Copy source code (fixed - no frontend/ subdirectory)
 COPY . .
