@@ -1,4 +1,4 @@
-# Frontend Dockerfile
+# Frontend Dockerfile - Node.js Production Server
 FROM node:18-alpine AS builder
 
 # Set working directory
@@ -16,17 +16,34 @@ COPY frontend/ .
 # Build the application
 RUN npm run build
 
-# Production stage with nginx
-FROM nginx:alpine
+# Production stage with Node.js
+FROM node:18-alpine AS production
+
+# Install serve for static files
+RUN npm install -g serve
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S reactapp -u 1001
+
+# Set working directory
+WORKDIR /app
 
 # Copy built app from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /app
 
-# Copy nginx configuration
-COPY frontend/nginx.conf /etc/nginx/nginx.conf
+# Change ownership
+RUN chown -R reactapp:nodejs /app
 
-# Expose port 80
-EXPOSE 80
+# Switch to non-root user
+USER reactapp
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Expose port 3000
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
+# Start the server
+CMD ["serve", "-s", "/app", "-l", "3000"]
