@@ -39,10 +39,15 @@ func (s *Service) Register(req UserRegisterRequest) (*UserResponse, error) {
 	}
 
 	// Create user
+	role := req.Role
+	if role == "" {
+		role = "buyer"
+	}
+	
 	user := models.User{
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
-		Role:         "buyer", // Default role
+		Role:         role,
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		Phone:        req.Phone,

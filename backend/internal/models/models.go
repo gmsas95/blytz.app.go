@@ -55,6 +55,7 @@ type Product struct {
 	Status        string    `gorm:"default:'draft'" json:"status"`     // 'draft', 'active', 'sold', 'cancelled'
 	Featured      bool      `gorm:"default:false" json:"featured"`
 	ViewCount     int       `gorm:"default:0" json:"view_count"`
+	HasVariants   bool      `gorm:"default:false" json:"has_variants"`
 }
 
 // Order represents a customer order
@@ -112,9 +113,85 @@ type Cart struct {
 // CartItem represents items in a cart
 type CartItem struct {
 	common.BaseModel
-	CartID    uuid.UUID `gorm:"not null;references:ID" json:"cart_id"`
-	ProductID uuid.UUID `gorm:"not null;references:ID" json:"product_id"`
+	CartID     uuid.UUID `gorm:"not null;references:ID" json:"cart_id"`
+	ProductID  uuid.UUID `gorm:"not null;references:ID" json:"product_id"`
+	VariantID  *uuid.UUID `gorm:"references:ID" json:"variant_id,omitempty"`
 	Quantity   int        `gorm:"not null" json:"quantity"`
 	AddedAt    time.Time  `gorm:"autoCreateTime" json:"added_at"`
 	Product    Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+}
+
+// ProductVariant represents product variants (size, color, etc.)
+type ProductVariant struct {
+	common.BaseModel
+	ProductID    uuid.UUID  `gorm:"not null;references:ID" json:"product_id"`
+	Sku          string     `gorm:"uniqueIndex;not null" json:"sku"`
+	Title        string     `gorm:"not null" json:"title"`
+	Price         float64    `gorm:"not null" json:"price"`
+	ComparePrice *float64   `json:"compare_price"`
+	CostPrice    *float64   `json:"cost_price"`
+	Weight       *float64   `json:"weight,omitempty"`
+	Barcode      *string    `json:"barcode,omitempty"`
+	Inventory    int        `gorm:"default:0" json:"inventory"`
+	IsActive     bool       `gorm:"default:true" json:"is_active"`
+	Attributes   string     `gorm:"type:jsonb" json:"attributes"` // JSON: {"color": "Red", "size": "M"}
+	ImageURL     *string    `json:"image_url,omitempty"`
+	Position     int        `gorm:"default:0" json:"position"`
+	Product      Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+}
+
+// CategoryAttribute represents custom attributes for categories
+type CategoryAttribute struct {
+	common.BaseModel
+	CategoryID  uuid.UUID  `gorm:"not null;references:ID" json:"category_id"`
+	Name        string     `gorm:"not null" json:"name"`
+	Type        string     `gorm:"not null" json:"type"` // text, number, boolean, select, multiselect
+	Required    bool       `gorm:"default:false" json:"required"`
+	Options     []string   `gorm:"type:jsonb" json:"options,omitempty"` // For select/multiselect
+	DefaultValue *string    `json:"default_value,omitempty"`
+	SortOrder   int        `gorm:"default:0" json:"sort_order"`
+	Category    Category   `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
+}
+
+// ProductCollection represents product collections/groupings
+type ProductCollection struct {
+	common.BaseModel
+	Name        string  `gorm:"not null" json:"name"`
+	Slug        string  `gorm:"uniqueIndex;not null" json:"slug"`
+	Description *string `json:"description"`
+	ImageURL    *string `json:"image_url"`
+	IsActive    bool    `gorm:"default:true" json:"is_active"`
+	SortOrder   int     `gorm:"default:0" json:"sort_order"`
+	ProductIDs  string  `gorm:"type:jsonb" json:"product_ids"` // Array of product UUIDs
+}
+
+// InventoryStock represents inventory tracking
+type InventoryStock struct {
+	common.BaseModel
+	ProductID       uuid.UUID  `gorm:"not null;uniqueIndex;references:ID" json:"product_id"`
+	VariantID       *uuid.UUID `gorm:"references:ID" json:"variant_id,omitempty"`
+	Quantity        int        `gorm:"not null;default:0" json:"quantity"`
+	Reserved        int        `gorm:"not null;default:0" json:"reserved"`
+	Available       int        `gorm:"not null;default:0" json:"available"`
+	LowStockAlert   int        `gorm:"default:10" json:"low_stock_alert"`
+	TrackInventory  bool       `gorm:"default:true" json:"track_inventory"`
+	AllowBackorder  bool       `gorm:"default:false" json:"allow_backorder"`
+	WarehouseID     *uuid.UUID `json:"warehouse_id,omitempty"`
+	LastUpdated     time.Time  `gorm:"autoUpdateTime" json:"last_updated"`
+	Product         Product    `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+	Variant         *ProductVariant `gorm:"foreignKey:VariantID" json:"variant,omitempty"`
+}
+
+// StockMovement represents stock movement history
+type StockMovement struct {
+	common.BaseModel
+	ProductID    uuid.UUID       `gorm:"not null;references:ID" json:"product_id"`
+	VariantID    *uuid.UUID      `gorm:"references:ID" json:"variant_id,omitempty"`
+	MovementType string          `gorm:"not null" json:"movement_type"` // in, out, adjustment, reserve, release
+	Quantity     int             `gorm:"not null" json:"quantity"`
+	Reference    *string         `json:"reference,omitempty"`
+	Notes        *string         `json:"notes,omitempty"`
+	WarehouseID  *uuid.UUID      `json:"warehouse_id,omitempty"`
+	Product      Product         `gorm:"foreignKey:ProductID" json:"product,omitempty"`
+	Variant      *ProductVariant `gorm:"foreignKey:VariantID" json:"variant,omitempty"`
 }

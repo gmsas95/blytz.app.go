@@ -6,6 +6,7 @@ import (
 
 	"github.com/blytz.live.remake/backend/internal/auth"
 	"github.com/blytz.live.remake/backend/internal/cart"
+	"github.com/blytz.live.remake/backend/internal/catalog"
 	"github.com/blytz.live.remake/backend/internal/common"
 	"github.com/blytz.live.remake/backend/internal/config"
 	"github.com/blytz.live.remake/backend/internal/database"
@@ -55,6 +56,11 @@ func main() {
 				&models.CartItem{},
 				&models.Order{},
 				&models.OrderItem{},
+				&models.ProductVariant{},
+				&models.CategoryAttribute{},
+				&models.ProductCollection{},
+				&models.InventoryStock{},
+				&models.StockMovement{},
 			)
 			if err != nil {
 				log.Printf("Warning: Failed to auto-migrate database: %v", err)
@@ -136,6 +142,7 @@ func main() {
 	var productHandler *products.Handler
 	var cartHandler *cart.Handler
 	var orderHandler *orders.Handler
+	var catalogHandler *catalog.Handler
 	var cartService *cart.Service
 	var orderService *orders.Service
 	if db != nil {
@@ -161,6 +168,10 @@ func main() {
 		// Initialize order service and handler
 		orderService = orders.NewService(db, cartService)
 		orderHandler = orders.NewHandler(orderService)
+		
+		// Initialize catalog service and handler
+		catalogService := catalog.NewService(db)
+		catalogHandler = catalog.NewHandler(catalogService)
 
 		// API v1 routes
 		v1 := router.Group("/api/v1")
@@ -174,12 +185,15 @@ func main() {
 			auth.POST("/refresh", authHandler.RefreshToken)
 		}
 
-		// Public product routes
+		// Public product and catalog routes
 		productsGroup := v1.Group("/products")
 		{
 			productsGroup.GET("", productHandler.ListProducts)
 			productsGroup.GET("/:id", productHandler.GetProduct)
 		}
+		
+		// Public catalog routes
+		catalogHandler.RegisterRoutes(v1.Group("/catalog"), authHandler)
 
 		// Public cart routes (with middleware)
 		cartGroup := v1.Group("/cart")
@@ -199,12 +213,11 @@ func main() {
 			auth.POST("/logout", authHandler.Logout)
 			
 			// Protected product routes
-			productsGroup = protected.Group("/products")
+			protectedProductGroup := protected.Group("/products")
 			{
-				productsGroup.POST("", productHandler.CreateProduct)
-				productsGroup.PUT("/:id", productHandler.UpdateProduct)
-				productsGroup.DELETE("/:id", productHandler.DeleteProduct)
-				productsGroup.GET("/my-products", productHandler.ListSellerProducts)
+				protectedProductGroup.POST("", productHandler.CreateProduct)
+				protectedProductGroup.PUT("/:id", productHandler.UpdateProduct)
+				protectedProductGroup.DELETE("/:id", productHandler.DeleteProduct)
 			}
 			
 			// Protected cart routes

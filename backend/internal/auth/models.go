@@ -14,11 +14,12 @@ type UserLoginRequest struct {
 
 // UserRegisterRequest represents registration request payload
 type UserRegisterRequest struct {
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=8"`
+	Email     string  `json:"email" binding:"required,email"`
+	Password  string  `json:"password" binding:"required,min=8"`
 	FirstName *string `json:"first_name,omitempty"`
 	LastName  *string `json:"last_name,omitempty"`
 	Phone     *string `json:"phone,omitempty"`
+	Role      string  `json:"role,omitempty"`
 }
 
 // UserResponse represents user response payload

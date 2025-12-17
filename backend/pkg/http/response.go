@@ -29,8 +29,17 @@ func SuccessWithMessage(c *gin.Context, statusCode int, data interface{}, messag
 }
 
 // Error sends an error response
-func Error(c *gin.Context, statusCode int, message string) {
-	Response(c, statusCode, false, nil, message)
+func Error(c *gin.Context, statusCode int, message string, err error) {
+	response := gin.H{
+		"success": false,
+		"message": message,
+	}
+	
+	if err != nil {
+		response["error"] = err.Error()
+	}
+	
+	c.JSON(statusCode, response)
 }
 
 // ValidationError sends validation error response
@@ -44,7 +53,7 @@ func ValidationError(c *gin.Context, err error) {
 		return
 	}
 	
-	Error(c, http.StatusBadRequest, "Validation failed")
+	Error(c, http.StatusBadRequest, "Validation failed", err)
 }
 
 // PaginatedResponse sends paginated response
@@ -63,6 +72,20 @@ func PaginatedResponse(c *gin.Context, data interface{}, total int64, page, page
 	}
 	
 	c.JSON(http.StatusOK, response)
+}
+
+// SuccessWithPagination sends a paginated success response
+func SuccessWithPagination(c *gin.Context, statusCode int, data interface{}, total int64, count int) {
+	response := gin.H{
+		"success": true,
+		"data":    data,
+		"pagination": gin.H{
+			"total":  total,
+			"count":  count,
+		},
+	}
+	
+	c.JSON(statusCode, response)
 }
 
 // ParseJSON parses JSON request body
