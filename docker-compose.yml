@@ -1,8 +1,9 @@
-# 🚀 Blytz.live - Production Docker Compose (Dokploy Compatible)
+# 🚀 Blytz.live - Production Docker Compose (No Port Mapping)
 # Complete setup: Traefik + Frontend + Backend + Database + Cache
+# Note: External Traefik handles port mapping
 
 services:
-  # Traefik Reverse Proxy (Custom External Ports)
+  # Traefik Reverse Proxy (EXTERNAL - No Port Mapping)
   traefik:
     image: traefik:v3.0
     container_name: blytz-traefik
@@ -11,18 +12,15 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:8080"
-      - "--entrypoints.websecure.address=:8443"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@blytz.app}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--log.level=INFO"
       - "--accesslog=true"
-    ports:
-      - "8080:8080"  # HTTP on custom port 8080
-      - "8443:8443"  # HTTPS on custom port 8443
-      - "9001:8080"  # Traefik dashboard on port 9001
+    # No external ports - handled by external Traefik
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt_data:/letsencrypt
@@ -30,7 +28,7 @@ services:
       - blytz-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-blytz.app}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
