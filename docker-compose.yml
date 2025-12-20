@@ -54,13 +54,12 @@ services:
         POSTGRES_INITDB_ARGS: --encoding=UTF-8
       volumes:
         - postgres_data:/var/lib/postgresql/data
-        - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
       networks:
         - blytz-network
       healthcheck:
         test:
           - CMD-SHELL
-          - pg_isready -U ${DB_USER:-blytz_user} -d ${DB_NAME:-blytz_marketplace}
+          - pg_isready -U blytz_user -d blytz_marketplace
         interval: 10s
         timeout: 5s
         retries: 5
@@ -79,8 +78,6 @@ services:
         test:
           - CMD
           - redis-cli
-          - --raw
-          - incr
           - ping
         interval: 10s
         timeout: 3s
