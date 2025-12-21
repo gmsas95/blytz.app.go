@@ -511,7 +511,7 @@ func (s *Service) GetFlashProducts() ([]ProductResponse, error) {
 
 	responses := make([]ProductResponse, len(products))
 	for i, product := range products {
-		responses[i] = s.mapToProductResponse(&product)
+		responses[i] = *s.toProductResponse(&product, true, true)
 	}
 
 	return responses, nil
@@ -533,7 +533,7 @@ func (s *Service) GetHotProducts() ([]ProductResponse, error) {
 
 	responses := make([]ProductResponse, len(products))
 	for i, product := range products {
-		responses[i] = s.mapToProductResponse(&product)
+		responses[i] = *s.toProductResponse(&product, true, true)
 	}
 
 	return responses, nil
