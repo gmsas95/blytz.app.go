@@ -50,6 +50,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - ./.env
+      - ./backend/.env
     container_name: blytzlive-backend
     restart: unless-stopped
     environment:
@@ -83,6 +86,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    env_file:
+      - ./.env
+      - ./frontend/.env
     container_name: blytzlive-frontend
     restart: unless-stopped
     environment:
