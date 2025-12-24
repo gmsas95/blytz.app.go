@@ -1,5 +1,6 @@
-# Simple Docker Compose - Production Ready
-version: '3.8'
+# Docker Compose for BlytzLive Project - Fixed Service Names
+# This file matches expected service names for deployment
+# Project name: blytzlive-webapp-XXXXX
 
 services:
   # PostgreSQL Database
@@ -8,18 +9,19 @@ services:
     container_name: blytzlive-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: blytz_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${DB_NAME:-blytz_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blytzlive-internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "sh", "-c", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-blytz_dev}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   # Redis Cache
   redis:
@@ -27,17 +29,17 @@ services:
     container_name: blytzlive-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - blytzlive-internal
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
 
-  # Backend API
+  # Backend API (Go)
   backend:
     build:
       context: ./backend
@@ -46,10 +48,10 @@ services:
     restart: unless-stopped
     environment:
       ENV: development
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/blytz_dev
+      DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-blytz_dev}
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: dev-secret-key
-      LOG_LEVEL: debug
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
       PORT: 8080
     ports:
       - "8080:8080"
@@ -58,13 +60,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - blytzlive-internal
+      - dokploy-network
+    volumes:
+      - ./backend:/app
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
-  # Frontend
+  # Frontend Application (React/Vite)
   frontend:
     build:
       context: ./frontend
@@ -78,13 +86,29 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    networks:
+      - blytzlive-internal
+      - dokploy-network
+    volumes:
+      - ./frontend:/app
     command: npm run dev
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
+
+networks:
+  blytzlive-internal:
+    driver: bridge
+    internal: false
+  dokploy-network:
+    external: true
+    name: dokploy-network
