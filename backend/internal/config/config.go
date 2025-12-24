@@ -24,6 +24,8 @@ type Config struct {
 	CORSOrigins    string
 	Environment    string
 	GeminiAPIKey   string
+	StripeSecretKey string
+	StripeWebhookSecret string
 }
 
 func Load() (*Config, error) {
@@ -38,16 +40,38 @@ func Load() (*Config, error) {
 		RedisHost:      getEnv("REDIS_HOST", "localhost"),
 		RedisPort:      getEnv("REDIS_PORT", "6379"),
 		RedisPass:      getEnv("REDIS_PASSWORD", ""),
-		JWTSecret:     getEnv("JWT_SECRET", "your-secret-key"),
+		JWTSecret:     getEnvOrError("JWT_SECRET"),
 		JWTExpiresIn:  getEnv("JWT_EXPIRES_IN", "168h"),
 		ServerPort:    getEnv("PORT", "8080"),
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
 		CORSOrigins:   getEnv("CORS_ORIGINS", "http://localhost:3000"),
 		Environment:    getEnv("ENVIRONMENT", "development"),
 		GeminiAPIKey:  getEnv("GEMINI_API_KEY", ""),
+		StripeSecretKey: getEnvOrError("STRIPE_SECRET_KEY"),
+		StripeWebhookSecret: getEnv("STRIPE_WEBHOOK_SECRET", ""),
+	}
+
+	// Validate critical security settings in production
+	if cfg.Env == "production" {
+		if cfg.JWTSecret == "your-secret-key" || cfg.JWTSecret == "" {
+			return nil, fmt.Errorf("JWT_SECRET must be set to a secure value in production")
+		}
+		if cfg.DatabaseSSL == "disable" {
+			return nil, fmt.Errorf("Database SSL must be enabled in production")
+		}
 	}
 
 	return cfg, nil
+}
+
+func getEnvOrError(key string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	if os.Getenv("ENV") == "production" {
+		panic(fmt.Sprintf("Environment variable %s is required in production", key))
+	}
+	return "your-secret-key" // Default for development only
 }
 
 // DatabaseURL returns the PostgreSQL connection string

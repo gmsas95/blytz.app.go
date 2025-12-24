@@ -51,7 +51,21 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: go run cmd/server/main.go
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: blytz-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8080/api/v1
+    volumes:
+      - ../frontend:/app
+    command: npm run dev
 
 volumes:
   postgres_data:

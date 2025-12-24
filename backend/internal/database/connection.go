@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
@@ -12,7 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// NewConnection creates a new database connection
+// NewConnection creates a new database connection with optimized settings
 func NewConnection(databaseURL string) (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
@@ -23,14 +24,31 @@ func NewConnection(databaseURL string) (*gorm.DB, error) {
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 	} else {
-		// PostgreSQL connection for production
+		// PostgreSQL connection for production with optimized config
 		db, err = gorm.Open(postgres.Open(databaseURL), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
+			NowFunc: func() time.Time {
+				return time.Now().UTC()
+			},
 		})
 	}
 	
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	// Configure connection pool for PostgreSQL
+	if !strings.HasPrefix(databaseURL, "sqlite:") {
+		sqlDB, err := db.DB()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get underlying database: %w", err)
+		}
+
+		// Set connection pool settings
+		sqlDB.SetMaxOpenConns(25)                 // Maximum number of open connections
+		sqlDB.SetMaxIdleConns(10)                 // Maximum number of idle connections
+		sqlDB.SetConnMaxLifetime(5 * time.Minute) // Maximum time a connection may be reused
+		sqlDB.SetConnMaxIdleTime(2 * time.Minute) // Maximum time a connection may be idle
 	}
 
 	return db, nil
