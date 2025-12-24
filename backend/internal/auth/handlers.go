@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,6 +21,11 @@ func NewHandler(service *Service, jwtManager *JWTManager) *Handler {
 		service:    service,
 		jwtManager: jwtManager,
 	}
+}
+
+// LogoutRequest represents logout request
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 // Register handles user registration
@@ -145,11 +151,49 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 
 // Logout handles user logout
 func (h *Handler) Logout(c *gin.Context) {
-	// In a production environment, you might want to:
-	// 1. Invalidate the refresh token (store in Redis with TTL)
-	// 2. Add the token to a blacklist
-	// 3. Clear any server-side session data
-	
+	var req LogoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+		return
+	}
+
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) == 2 && tokenParts[0] == "Bearer" {
+		accessToken := tokenParts[1]
+
+		expiration, err := h.jwtManager.GetTokenExpiration(accessToken)
+		if err == nil {
+			ttl := time.Until(expiration)
+			if ttl > 0 {
+				if err := h.jwtManager.RevokeToken(accessToken, ttl); err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke token"})
+					return
+				}
+			}
+		}
+	}
+
+	userID, exists := c.Get("userID")
+	if exists {
+		uid, err := uuid.Parse(userID.(string))
+		if err == nil {
+			claims, err := h.jwtManager.Validate(req.RefreshToken)
+			if err == nil && claims.UserID == uid {
+				h.jwtManager.InvalidateRefreshTokens(uid)
+			}
+		}
+	}
+
+	if req.RefreshToken != "" {
+		h.jwtManager.RevokeToken(req.RefreshToken, 7*24*time.Hour)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
@@ -163,7 +207,6 @@ func (h *Handler) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Extract token from "Bearer <token>"
 		tokenParts := strings.Split(authHeader, " ")
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
@@ -174,12 +217,11 @@ func (h *Handler) RequireAuth() gin.HandlerFunc {
 		tokenString := tokenParts[1]
 		claims, err := h.jwtManager.Validate(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or revoked token"})
 			c.Abort()
 			return
 		}
 
-		// Add user info to context
 		c.Set("userID", claims.UserID.String())
 		c.Set("email", claims.Email)
 		c.Set("role", claims.Role)

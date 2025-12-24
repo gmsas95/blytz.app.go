@@ -12,22 +12,24 @@ import (
 	"gorm.io/gorm"
 )
 
+func stringPtr(s string) *string {
+	return &s
+}
+
 // Service handles order business logic
 // NOTE: This is Phase 5A - Order Management implementation
-// TODO: Fix compilation errors related to Product.Images JSON handling
-// TODO: Implement proper stock reservation system with inventory module
 // TODO: Add more sophisticated tax calculation based on jurisdiction
 // TODO: Add shipping carrier integration
 // TODO: Implement order cancellation policies
 type Service struct {
-	db         *gorm.DB
+	db          *gorm.DB
 	cartService *cart.Service
 }
 
 // NewService creates a new order service
 func NewService(db *gorm.DB, cartService *cart.Service) *Service {
 	return &Service{
-		db:         db,
+		db:          db,
 		cartService: cartService,
 	}
 }
@@ -364,7 +366,7 @@ func (s *Service) GetOrderStatistics() (*OrderStatistics, error) {
 func (s *Service) calculateTax(subtotal float64, address Address) float64 {
 	// Simplified tax calculation - in production, use tax service API
 	taxRate := 0.08 // 8% default tax rate
-	
+
 	// Different tax rates based on location (simplified)
 	switch address.Country {
 	case "US":
@@ -387,7 +389,7 @@ func (s *Service) calculateTax(subtotal float64, address Address) float64 {
 func (s *Service) calculateShippingCost(address Address, totalItems int) float64 {
 	// Simplified shipping cost calculation
 	baseCost := 5.99
-	
+
 	// Different rates based on location
 	switch address.Country {
 	case "US":
@@ -408,31 +410,44 @@ func (s *Service) calculateShippingCost(address Address, totalItems int) float64
 
 // reserveStock reserves stock for order
 func (s *Service) reserveStock(tx *gorm.DB, productID uuid.UUID, quantity int) error {
-	// Get current stock
-	var stock struct {
-		Quantity  int
-		Reserved  int
-	}
+	var stock models.InventoryStock
 
-	if err := tx.Model(&models.Product{}).
-		Select("quantity, reserved").
-		Where("id = ?", productID).
-		Row().
-		Scan(&stock); err != nil {
+	if err := tx.Where("product_id = ?", productID).
+		First(&stock).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("product stock not found")
+		}
 		return fmt.Errorf("failed to get stock: %w", err)
 	}
 
 	// Check availability
-	available := stock.Quantity - stock.Reserved
-	if available < quantity {
+	if stock.Available < quantity {
 		return errors.New("insufficient stock")
 	}
 
 	// Update reservation
-	if err := tx.Model(&models.Product{}).
-		Where("id = ?", productID).
-		Update("reserved", stock.Reserved+quantity).Error; err != nil {
+	newReserved := stock.Reserved + quantity
+	newAvailable := stock.Quantity - newReserved
+
+	if err := tx.Model(&stock).
+		Updates(map[string]interface{}{
+			"reserved":  newReserved,
+			"available": newAvailable,
+		}).Error; err != nil {
 		return fmt.Errorf("failed to reserve stock: %w", err)
+	}
+
+	// Record stock movement
+	movement := models.StockMovement{
+		ProductID:    productID,
+		MovementType: "reserve",
+		Quantity:     quantity,
+		Reference:    stringPtr("order_reservation"),
+		Notes:        stringPtr(fmt.Sprintf("Reserved %d units for order", quantity)),
+	}
+
+	if err := tx.Create(&movement).Error; err != nil {
+		return fmt.Errorf("failed to record stock movement: %w", err)
 	}
 
 	return nil
@@ -442,16 +457,48 @@ func (s *Service) reserveStock(tx *gorm.DB, productID uuid.UUID, quantity int) e
 func (s *Service) releaseStockReservations(tx *gorm.DB, orderID uuid.UUID) error {
 	// Get order items
 	var items []OrderItem
-	if err := tx.Find(&items, "order_id = ?", orderID).Error; err != nil {
+	if err := tx.Where("order_id = ?", orderID).Find(&items).Error; err != nil {
 		return fmt.Errorf("failed to get order items: %w", err)
 	}
 
 	// Release stock for each item
 	for _, item := range items {
-		if err := tx.Model(&models.Product{}).
-			Where("id = ?", item.ProductID).
-			Update("reserved", gorm.Expr("reserved - ?", item.Quantity)).Error; err != nil {
+		var stock models.InventoryStock
+		if err := tx.Where("product_id = ?", item.ProductID).First(&stock).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				continue
+			}
+			return fmt.Errorf("failed to get stock: %w", err)
+		}
+
+		// Calculate new values
+		newReserved := stock.Reserved - item.Quantity
+		newAvailable := stock.Quantity - newReserved
+
+		if newReserved < 0 {
+			newReserved = 0
+		}
+
+		// Update stock
+		if err := tx.Model(&stock).
+			Updates(map[string]interface{}{
+				"reserved":  newReserved,
+				"available": newAvailable,
+			}).Error; err != nil {
 			return fmt.Errorf("failed to release stock: %w", err)
+		}
+
+		// Record stock movement
+		movement := models.StockMovement{
+			ProductID:    item.ProductID,
+			MovementType: "release",
+			Quantity:     item.Quantity,
+			Reference:    stringPtr("order_cancellation"),
+			Notes:        stringPtr(fmt.Sprintf("Released %d units from cancelled order", item.Quantity)),
+		}
+
+		if err := tx.Create(&movement).Error; err != nil {
+			return fmt.Errorf("failed to record stock movement: %w", err)
 		}
 	}
 
@@ -508,14 +555,14 @@ func (s *Service) orderToResponse(order *Order, items []OrderItem) (*OrderRespon
 		}
 
 		itemResponses[i] = OrderItemResponse{
-			ID:          item.ID,
-			OrderID:     item.OrderID,
-			ProductID:   item.ProductID,
-			Quantity:    item.Quantity,
-			UnitPrice:   item.UnitPrice,
-			Total:       item.Total,
-			Product:     productResponse,
-			CreatedAt:   item.CreatedAt,
+			ID:        item.ID,
+			OrderID:   item.OrderID,
+			ProductID: item.ProductID,
+			Quantity:  item.Quantity,
+			UnitPrice: item.UnitPrice,
+			Total:     item.Total,
+			Product:   productResponse,
+			CreatedAt: item.CreatedAt,
 		}
 
 		totalQuantity += item.Quantity
@@ -535,10 +582,10 @@ func (s *Service) orderToResponse(order *Order, items []OrderItem) (*OrderRespon
 		PaymentID:       order.PaymentID,
 		TrackingNumber:  order.TrackingNumber,
 		Notes:           order.Notes,
-		Items:          itemResponses,
-		ItemCount:      len(itemResponses),
+		Items:           itemResponses,
+		ItemCount:       len(itemResponses),
 		TotalQuantity:   totalQuantity,
-		CreatedAt:      order.CreatedAt,
-		UpdatedAt:      order.UpdatedAt,
+		CreatedAt:       order.CreatedAt,
+		UpdatedAt:       order.UpdatedAt,
 	}, nil
 }

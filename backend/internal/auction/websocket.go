@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -43,12 +45,59 @@ func NewWebSocketManager(db *gorm.DB, service *Service) *WebSocketManager {
 	}
 }
 
+// NewWebSocketUpgrader creates a configured WebSocket upgrader
+func NewWebSocketUpgrader(allowedOrigins []string) websocket.Upgrader {
+	return websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			if origin == "" {
+				return false
+			}
+
+			parsedOrigin, err := url.Parse(origin)
+			if err != nil {
+				return false
+			}
+
+			for _, allowed := range allowedOrigins {
+				if strings.HasSuffix(parsedOrigin.Host, allowed) {
+					return true
+				}
+			}
+			return false
+		},
+	}
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// In production, implement proper origin checking
-		return true
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+
+		parsedOrigin, err := url.Parse(origin)
+		if err != nil {
+			return false
+		}
+
+		allowedHosts := []string{
+			"localhost:3000",
+			"localhost:5173",
+			"127.0.0.1:3000",
+			"127.0.0.1:5173",
+		}
+
+		for _, allowed := range allowedHosts {
+			if strings.HasSuffix(parsedOrigin.Host, allowed) {
+				return true
+			}
+		}
+		return false
 	},
 }
 
@@ -126,7 +175,7 @@ func (wsm *WebSocketManager) addConnection(auctionID string, conn *websocket.Con
 	wsm.connections[auctionID][conn] = true
 
 	wsm.logger.Info("User joined auction room", map[string]interface{}{
-		"auction_id": auctionID,
+		"auction_id":  auctionID,
 		"connections": len(wsm.connections[auctionID]),
 	})
 }
@@ -259,7 +308,7 @@ func (wsm *WebSocketManager) handleMessages(conn *websocket.Conn, auctionID uuid
 				Timestamp: time.Now(),
 			}
 			conn.WriteJSON(pongMessage)
-			
+
 		case "chat":
 			// Handle chat message
 			if userID != nil {
@@ -311,7 +360,7 @@ func (wsm *WebSocketManager) handleChatMessage(auctionID uuid.UUID, userID uuid.
 // sendStatusUpdate sends periodic status updates to auction room
 func (wsm *WebSocketManager) sendStatusUpdate(auctionID string) {
 	userCount := wsm.getConnectionCount(auctionID)
-	
+
 	// Get current auction info
 	auctionUUID, err := uuid.Parse(auctionID)
 	if err != nil {
@@ -327,12 +376,12 @@ func (wsm *WebSocketManager) sendStatusUpdate(auctionID string) {
 		Type:      "status_update",
 		AuctionID: auctionID,
 		Data: gin.H{
-			"user_count":   userCount,
-			"current_bid":  auction.CurrentBid,
-			"bid_count":    auction.BidCount,
-			"status":       auction.Status,
-			"end_time":     auction.EndTime,
-			"time_left":    time.Until(auction.EndTime),
+			"user_count":  userCount,
+			"current_bid": auction.CurrentBid,
+			"bid_count":   auction.BidCount,
+			"status":      auction.Status,
+			"end_time":    auction.EndTime,
+			"time_left":   time.Until(auction.EndTime),
 		},
 		Timestamp: time.Now(),
 	}

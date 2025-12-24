@@ -5,8 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/blytz.live.remake/backend/internal/auth"
 	"github.com/blytz.live.remake/backend/internal/auction"
+	"github.com/blytz.live.remake/backend/internal/auth"
+	"github.com/blytz.live.remake/backend/internal/cache"
 	"github.com/blytz.live.remake/backend/internal/cart"
 	"github.com/blytz.live.remake/backend/internal/catalog"
 	"github.com/blytz.live.remake/backend/internal/common"
@@ -55,7 +56,7 @@ func main() {
 		db = nil
 	} else {
 		log.Println("✅ Database connected")
-		
+
 		// Auto-migrate all models
 		if db != nil {
 			err = db.AutoMigrate(
@@ -91,7 +92,7 @@ func main() {
 				db = nil
 			} else {
 				log.Println("✅ Database migration completed")
-				
+
 				// Seed a test category if none exists
 				var categoryCount int64
 				if err := db.Model(&models.Category{}).Count(&categoryCount).Error; err == nil && categoryCount == 0 {
@@ -116,14 +117,22 @@ func main() {
 
 	// Initialize Redis (using environment config)
 	var redisClient *redis.Client
-	// var cacheClient *cache.Cache // Temporarily unused
-	// var productCache *cache.ProductCache // Temporarily unused
-	
+	var cacheClient *cache.Cache
+
 	redisClient = database.NewRedisClient(cfg.RedisURL())
 	if redisClient == nil {
 		log.Println("Warning: Failed to connect to Redis (continuing without cache)")
 	} else {
 		log.Println("✅ Redis connected")
+
+		// Initialize cache client
+		cacheClient, err = cache.NewCache(cfg.RedisURL())
+		if err != nil {
+			log.Printf("Warning: Failed to initialize cache client: %v (continuing without cache)", err)
+			cacheClient = nil
+		} else {
+			log.Println("✅ Cache client initialized")
+		}
 	}
 
 	// Set Gin mode based on environment
@@ -146,25 +155,25 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		dbStatus := "disconnected"
 		redisStatus := "disconnected"
-		
+
 		if db != nil {
 			sqlDB, _ := db.DB()
 			if sqlDB.Ping() == nil {
 				dbStatus = "connected"
 			}
 		}
-		
+
 		if redisClient != nil {
 			if _, err := redisClient.Ping(c).Result(); err == nil {
 				redisStatus = "connected"
 			}
 		}
-		
+
 		c.JSON(200, gin.H{
-			"status":    "ok",
-			"database":  dbStatus,
-			"redis":     redisStatus,
-			"env":       cfg.Env,
+			"status":   "ok",
+			"database": dbStatus,
+			"redis":    redisStatus,
+			"env":      cfg.Env,
 		})
 	})
 
@@ -177,7 +186,7 @@ func main() {
 		})
 	})
 
-		// Initialize auth components if database is available
+	// Initialize auth components if database is available
 	var authHandler *auth.Handler
 	var productHandler *products.Handler
 	var cartHandler *cart.Handler
@@ -192,28 +201,28 @@ func main() {
 	var wsManager *auction.WebSocketManager
 	if db != nil {
 		log.Println("✅ Database available - Initializing authentication system")
-		
-		// Initialize JWT manager
-		jwtManager := auth.NewJWTManager(cfg.JWTSecret, time.Hour)
-		
+
+		// Initialize JWT manager with cache support
+		jwtManager := auth.NewJWTManager(cfg.JWTSecret, time.Hour, cacheClient)
+
 		// Initialize auth service
 		authService := auth.NewService(db, jwtManager)
-		
+
 		// Initialize auth handler
 		authHandler = auth.NewHandler(authService, jwtManager)
-		
+
 		// Initialize product service and handler
 		productService := products.NewService(db)
 		productHandler = products.NewHandler(productService)
-		
+
 		// Initialize cart service and handler
 		cartService = cart.NewService(db)
 		cartHandler = cart.NewHandler(cartService)
-		
+
 		// Initialize order service and handler
 		orderService = orders.NewService(db, cartService)
 		orderHandler = orders.NewHandler(orderService)
-		
+
 		// Initialize catalog service and handler
 		catalogService := catalog.NewService(db)
 		catalogHandler = catalog.NewHandler(catalogService)
@@ -221,22 +230,22 @@ func main() {
 		// Initialize auction service and handler
 		auctionService = auction.NewService(db)
 		auctionHandler = auction.NewHandler(auctionService)
-		
+
 		// Initialize WebSocket manager for auctions
 		wsManager = auction.NewWebSocketManager(db, auctionService)
-		
+
 		// Set WebSocket manager in auction service for notifications
 		auctionService.SetWebSocketManager(wsManager)
-		
+
 		// Initialize payment service
 		paymentService = payments.NewService(db, cfg.StripeSecretKey)
 		paymentHandler = payments.NewHandler(paymentService)
-		
+
 		// Set Stripe webhook secret in handler context (using a global variable for now)
 		// router.Set("stripe_webhook_secret", cfg.StripeWebhookSecret)
-		
+
 		// Initialize LiveKit service
-		// livekitService = livekit.NewService(db, 
+		// livekitService = livekit.NewService(db,
 		// 	getEnv("LIVEKIT_HOST", "http://localhost:7880"),
 		// 	getEnv("LIVEKIT_API_KEY", ""),
 		// 	getEnv("LIVEKIT_API_SECRET", ""),
@@ -246,7 +255,7 @@ func main() {
 		// API v1 routes
 		v1 := router.Group("/api/v1")
 		v1.Use(middleware.APISecurity())
-		
+
 		// Public auth routes
 		auth := v1.Group("/auth")
 		auth.Use(middleware.AuthRateLimit()) // Stricter rate limiting for auth
@@ -264,7 +273,7 @@ func main() {
 			productsGroup.GET("/flash", productHandler.GetFlashProducts)
 			productsGroup.GET("/hot", productHandler.GetHotProducts)
 		}
-		
+
 		// Public catalog routes
 		catalogHandler.RegisterRoutes(v1.Group("/catalog"), authHandler)
 
@@ -317,7 +326,7 @@ func main() {
 			auth.GET("/profile", authHandler.GetProfile)
 			auth.POST("/change-password", authHandler.ChangePassword)
 			auth.POST("/logout", authHandler.Logout)
-			
+
 			// Protected product routes
 			protectedProductGroup := protected.Group("/products")
 			{
@@ -325,7 +334,7 @@ func main() {
 				protectedProductGroup.PUT("/:id", productHandler.UpdateProduct)
 				protectedProductGroup.DELETE("/:id", productHandler.DeleteProduct)
 			}
-			
+
 			// Protected cart routes
 			cartGroup = protected.Group("/cart")
 			cartGroup.Use(cart.CartMiddleware(cartService))
@@ -336,7 +345,7 @@ func main() {
 				cartGroup.DELETE("", cartHandler.ClearCart)
 				cartGroup.POST("/merge", cartHandler.MergeCart)
 			}
-			
+
 			// Protected auction routes
 			protectedAuctionGroup := protected.Group("/auctions")
 			{
@@ -358,7 +367,7 @@ func main() {
 				ordersGroup.PUT("/:id/status", orderHandler.UpdateOrderStatus) // Admin/seller
 				ordersGroup.DELETE("/:id", orderHandler.CancelOrder)
 			}
-			
+
 			// Protected payment routes
 			protectedPaymentGroup := protected.Group("/payments")
 			{
