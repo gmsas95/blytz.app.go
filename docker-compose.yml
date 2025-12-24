@@ -72,14 +72,12 @@ services:
       - dokploy-network
     healthcheck:
       test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:8080/
+        - CMD-SHELL
+        - "pgrep -f blytz-server || exit 1"
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 30s
     labels:
       - traefik.enable=true
       - traefik.http.services.blytzlive-backend.loadbalancer.server.port=8080
