@@ -4,9 +4,10 @@ import { useAuthStore } from '../../store/authStore';
 
 interface SellerDashboardProps {
   user: User | null;
+  onLoginClick: () => void;
 }
 
-export const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
+export const SellerDashboard: React.FC<SellerDashboardProps> = ({ user, onLoginClick }) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">
@@ -14,7 +15,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ user }) => {
         {user ? (
           <p className="text-gray-400">Welcome back, {user.first_name}</p>
         ) : (
-          <Button onClick={() => alert('Login functionality coming soon!')}>Login to Start Selling</Button>
+          <Button onClick={onLoginClick}>Login to Start Selling</Button>
         )}
       </div>
 

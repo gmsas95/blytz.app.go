@@ -9,6 +9,8 @@ import { Drops } from './components/Drops';
 import { Account } from './components/Account';
 import { CartDrawer } from './components/CartDrawer';
 import { SellerDashboard } from './components/SellerDashboard';
+import { Login } from './components/Login';
+import { Register } from './components/Register';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { ViewState } from './types';
@@ -18,6 +20,8 @@ interface AppState {
   selectedProduct: Product | null;
   activeCategory: string;
   isChatOpen: boolean;
+  isLoginOpen: boolean;
+  isRegisterOpen: boolean;
 }
 
 const App: React.FC = () => {
@@ -31,6 +35,8 @@ const App: React.FC = () => {
     selectedProduct: null,
     activeCategory: 'all',
     isChatOpen: false,
+    isLoginOpen: false,
+    isRegisterOpen: false,
   });
 
   const handleNavClick = (newView: ViewState) => {
@@ -53,6 +59,8 @@ const App: React.FC = () => {
         cartCount={cart.getItemCount()}
         onCartClick={() => cart.setIsCartOpen(true)}
         onNavClick={handleNavClick}
+        onLoginClick={() => setAppState(prev => ({ ...prev, isLoginOpen: true }))}
+        onRegisterClick={() => setAppState(prev => ({ ...prev, isRegisterOpen: true }))}
       />
 
       <main>
@@ -81,7 +89,12 @@ const App: React.FC = () => {
 
         {appState.view === 'DROPS' && <Drops />}
 
-        {appState.view === 'SELL' && <SellerDashboard user={auth.user} />}
+        {appState.view === 'SELL' && (
+          <SellerDashboard
+            user={auth.user}
+            onLoginClick={() => setAppState(prev => ({ ...prev, isLoginOpen: true }))}
+          />
+        )}
 
         {appState.view === 'ACCOUNT' && <Account onViewChange={handleNavClick} />}
       </main>
@@ -103,6 +116,22 @@ const App: React.FC = () => {
 
       {/* Cart Drawer */}
       {cart.isCartOpen && <CartDrawer view={appState.view} onViewChange={handleNavClick} />}
+
+      {/* Login Modal */}
+      {appState.isLoginOpen && (
+        <Login
+          onClose={() => setAppState(prev => ({ ...prev, isLoginOpen: false }))}
+          onSwitchToRegister={() => setAppState(prev => ({ ...prev, isLoginOpen: false, isRegisterOpen: true }))}
+        />
+      )}
+
+      {/* Register Modal */}
+      {appState.isRegisterOpen && (
+        <Register
+          onClose={() => setAppState(prev => ({ ...prev, isRegisterOpen: false }))}
+          onSwitchToLogin={() => setAppState(prev => ({ ...prev, isRegisterOpen: false, isLoginOpen: true }))}
+        />
+      )}
 
       {/* Footer */}
       <footer className="bg-black border-t border-white/10 py-12 mt-auto">

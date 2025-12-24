@@ -7,9 +7,11 @@ interface HeaderProps {
   cartCount: number;
   onCartClick: () => void;
   onNavClick: (view: ViewState) => void;
+  onLoginClick: () => void;
+  onRegisterClick: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onNavClick }) => {
+export const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onNavClick, onLoginClick, onRegisterClick }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -46,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onNavCli
             <button onClick={() => onNavClick('DROPS')} className="hover:text-blytz-neon transition-colors uppercase tracking-wide">Drops</button>
             <button onClick={() => onNavClick('SELL')} className="hover:text-blytz-neon transition-colors uppercase tracking-wide">Sell</button>
             <button onClick={() => onNavClick('ACCOUNT')} className="hover:text-blytz-neon transition-colors uppercase tracking-wide">Account</button>
+            <button onClick={onLoginClick} className="hover:text-blytz-neon transition-colors uppercase tracking-wide">Login</button>
           </div>
 
           <button 
@@ -83,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onNavCli
               <button onClick={() => { onNavClick('SELL'); setIsMobileMenuOpen(false); }} className="text-left text-lg font-display text-white hover:text-blytz-neon">Sell Item</button>
               <button onClick={() => { onNavClick('ACCOUNT'); setIsMobileMenuOpen(false); }} className="text-left text-lg font-display text-white hover:text-blytz-neon">Account</button>
               <div className="h-px bg-white/10 my-2" />
-              <Button variant="primary" className="w-full" onClick={() => { onNavClick('ACCOUNT'); setIsMobileMenuOpen(false); }}>Sign In</Button>
+              <Button variant="primary" className="w-full" onClick={() => { onLoginClick(); setIsMobileMenuOpen(false); }}>Sign In</Button>
             </nav>
         </div>
       )}
