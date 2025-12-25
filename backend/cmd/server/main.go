@@ -157,6 +157,15 @@ func main() {
 	// Create Gin router
 	router := gin.Default()
 
+	// Add CORS middleware
+	cors := cors.New(cors.Config{
+		AllowAllOrigins: []string{"https://blytz.app", "http://localhost:5173", "http://localhost:3000", "http://localhost:8080"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Authorization", "Content-Type", "X-Requested-With"},
+		AllowCredentials: true,
+	})
+	router.Use(cors)
+
 	// Add middleware
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS())
