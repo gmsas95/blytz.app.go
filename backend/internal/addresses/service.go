@@ -2,7 +2,6 @@ package addresses
 
 import (
 	"errors"
-	"net/http"
 	"time"
 
 	"github.com/blytz.live.remake/backend/internal/common"
@@ -208,7 +207,7 @@ func (s *Service) DeleteAddress(id, userID uuid.UUID) error {
 
 // SetDefaultAddress sets an address as default for its type
 func (s *Service) SetDefaultAddress(id, userID uuid.UUID) (*Address, error) {
-	// Get the address first
+	// Get address first
 	var address Address
 	err := s.db.Where("id = ? AND user_id = ?", id, userID).First(&address).Error
 	if err != nil {
@@ -229,7 +228,7 @@ func (s *Service) SetDefaultAddress(id, userID uuid.UUID) (*Address, error) {
 	return &address, nil
 }
 
-// GetDefaultAddress returns the default address of a specific type
+// GetDefaultAddress returns default address of a specific type
 func (s *Service) GetDefaultAddress(userID uuid.UUID, addressType string) (*Address, error) {
 	var address Address
 	err := s.db.Where("user_id = ? AND type = ? AND is_default = ?", userID, addressType, true).
