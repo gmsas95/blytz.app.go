@@ -1,13 +1,13 @@
 package addresses
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/blytz.live.remake/backend/internal/common"
-	pkghttp "github.com/blytz.live.remake/backend/pkg/http"
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Address represents a user's shipping/billing address
@@ -201,7 +201,7 @@ func (s *Service) DeleteAddress(id, userID uuid.UUID) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return pkghttp.NewHTTPError(http.StatusNotFound, "Address not found")
+		return errors.New("Address not found")
 	}
 	return nil
 }
