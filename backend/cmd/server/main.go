@@ -24,7 +24,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-)
+	"github.com/blytz.live.remake/backend/internal/cache"
+
+	"github.com/gin-contrib/cors"
 
 func stringPtr(s string) *string {
 	return &s
@@ -123,7 +125,18 @@ func main() {
 	redisClient = database.NewRedisClient(cfg.RedisURL())
 	if redisClient == nil {
 		log.Println("Warning: Failed to connect to Redis (continuing without cache)")
-	} else {
+	}
+
+	// Setup CORS middleware
+	cors := cors.New(cors.Config{
+		AllowAllOrigins: []string{"https://blytz.app", "http://localhost:5173", "http://localhost:3000", "http://localhost:8080"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Authorization", "Content-Type", "X-Requested-With"},
+		AllowCredentials: true,
+	})
+	router.Use(cors)
+
+	// Initialize database (using environment config) else {
 		log.Println("✅ Redis connected")
 
 		// Initialize cache client
