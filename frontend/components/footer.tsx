@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Instagram, Twitter, Facebook, Youtube } from 'lucide-react';
+import { Instagram, Twitter, Facebook, Youtube, Mail, MapPin, Phone } from 'lucide-react';
 
 const footerLinks = {
-  company: [
-    { name: 'About Us', href: '/about' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Press', href: '/press' },
-    { name: 'Contact', href: '/contact' },
+  platform: [
+    { name: 'Browse Auctions', href: '/auctions' },
+    { name: 'Live Streams', href: '/streams' },
+    { name: 'Sell Items', href: '/sell' },
+    { name: 'How it Works', href: '/how-it-works' },
   ],
   support: [
     { name: 'Help Center', href: '/help' },
@@ -16,11 +16,16 @@ const footerLinks = {
     { name: 'Community', href: '/community' },
     { name: 'Guidelines', href: '/guidelines' },
   ],
+  company: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Press', href: '/press' },
+    { name: 'Contact', href: '/contact' },
+  ],
   legal: [
     { name: 'Terms of Service', href: '/terms' },
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Cookie Policy', href: '/cookies' },
-    { name: 'Seller Terms', href: '/seller-terms' },
   ],
 };
 
@@ -33,74 +38,83 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg">
-                B
+    <footer className="bg-black border-t border-neutral-800">
+      {/* Main Footer */}
+      <div className="container-modern py-16">
+        <div className="grid lg:grid-cols-6 gap-12">
+          {/* Brand */}
+          <div className="lg:col-span-2 space-y-6">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-blytz-yellow rounded-xl flex items-center justify-center">
+                <span className="text-black font-black text-2xl">B</span>
               </div>
-              <span className="text-xl font-bold">Blytz</span>
+              <span className="text-2xl font-black text-white">BLYTZ</span>
             </Link>
-            <p className="text-sm text-muted-foreground mb-4">
-              Malaysia&apos;s premier live auction marketplace. Discover unique items, bid in real-time, and connect with sellers.
+            <p className="text-gray-400 max-w-xs">
+              Malaysia&apos;s premier live auction marketplace. Discover unique items, bid in real-time, and win amazing deals.
             </p>
-            <div className="flex space-x-4">
+            
+            {/* Social Links */}
+            <div className="flex gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
                   href={social.href}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-gray-400 hover:bg-blytz-yellow hover:text-black transition-all"
                   aria-label={social.name}
                 >
-                  <social.icon className="h-5 w-5" />
+                  <social.icon className="w-5 h-5" />
                 </a>
               ))}
             </div>
           </div>
-          
+
+          {/* Links */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h4 className="text-white font-bold mb-4">Platform</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+              {footerLinks.platform.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
+                  <Link href={link.href} className="text-gray-400 hover:text-blytz-yellow transition-colors text-sm">
                     {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          
+
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
+            <h4 className="text-white font-bold mb-4">Support</h4>
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
+                  <Link href={link.href} className="text-gray-400 hover:text-blytz-yellow transition-colors text-sm">
                     {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          
+
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h4 className="text-white font-bold mb-4">Company</h4>
+            <ul className="space-y-3">
+              {footerLinks.company.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-gray-400 hover:text-blytz-yellow transition-colors text-sm">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-bold mb-4">Legal</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
+                  <Link href={link.href} className="text-gray-400 hover:text-blytz-yellow transition-colors text-sm">
                     {link.name}
                   </Link>
                 </li>
@@ -108,13 +122,25 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        
-        <div className="border-t mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Blytz.live. All rights reserved.
-          </p>
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-            <span>Made with ❤️ in Malaysia</span>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-neutral-900">
+        <div className="container-modern py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} Blytz.live. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <MapPin className="w-4 h-4" />
+                <span>Kuala Lumpur, Malaysia</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <Mail className="w-4 h-4" />
+                <span>hello@blytz.live</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

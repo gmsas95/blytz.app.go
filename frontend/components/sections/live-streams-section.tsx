@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { StreamCard } from '@/components/stream-card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Radio } from 'lucide-react';
 
 const liveStreams = [
   {
@@ -49,36 +49,37 @@ const liveStreams = [
 
 export function LiveStreamsSection() {
   return (
-    <section className="py-12">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold flex items-center">
-            Live Now
-            <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-blytz-red animate-pulse-live" />
-          </h2>
-          <p className="text-sm text-muted-foreground">Join the action in real-time</p>
+    <section className="section-padding bg-black relative overflow-hidden">
+      {/* Background Accent */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blytz-yellow/5 to-transparent" />
+      
+      <div className="container-modern relative z-10">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 mb-4">
+              <Radio className="w-4 h-4 text-red-500 animate-pulse" />
+              <span className="text-red-500 text-sm font-semibold">LIVE NOW</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white">
+              LIVE <span className="text-blytz-yellow">STREAMS</span>
+            </h2>
+            <p className="text-gray-400 mt-3 text-lg">Join the action in real-time</p>
+          </div>
+          <Link href="/streams">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-white hover:text-black rounded-full px-6">
+              View All Streams
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
         </div>
-        <Link href="/streams">
-          <Button variant="ghost" className="hidden sm:flex">
-            View All
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {liveStreams.map((stream) => (
-          <StreamCard key={stream.id} stream={stream} />
-        ))}
-      </div>
-      
-      <div className="mt-6 text-center sm:hidden">
-        <Link href="/streams">
-          <Button variant="outline" className="w-full">
-            View All Streams
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
+
+        {/* Streams Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {liveStreams.map((stream) => (
+            <StreamCard key={stream.id} stream={stream} />
+          ))}
+        </div>
       </div>
     </section>
   );

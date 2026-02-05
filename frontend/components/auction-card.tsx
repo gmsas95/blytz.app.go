@@ -2,12 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Play, Clock, Users, Heart } from 'lucide-react';
 import { useCountdown } from '@/hooks/use-countdown';
+import { Play, Users, ArrowUpRight } from 'lucide-react';
 
 interface AuctionCardProps {
   auction: {
@@ -28,85 +24,93 @@ interface AuctionCardProps {
 }
 
 export function AuctionCard({ auction }: AuctionCardProps) {
-  const { hours, minutes, seconds, isExpired } = useCountdown(auction.endTime);
+  const { days, hours, minutes, isExpired } = useCountdown(auction.endTime);
+
+  const formatTime = () => {
+    if (isExpired) return 'Ended';
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <Image
-          src={auction.image}
-          alt={auction.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        
-        {auction.isLive && (
-          <Badge className="absolute top-3 left-3 bg-blytz-red hover:bg-blytz-red text-white animate-pulse-live">
-            <Play className="mr-1 h-3 w-3 fill-current" />
-            LIVE
-          </Badge>
-        )}
-        
-        <Button
-          size="icon"
-          variant="secondary"
-          className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Heart className="h-4 w-4" />
-        </Button>
-        
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-          <div className="flex items-center text-white text-sm">
-            <Clock className="mr-1 h-4 w-4" />
-            {isExpired ? (
-              'Ended'
-            ) : (
-              <span className="font-mono">
-                {hours}h {minutes}m {seconds}s
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <CardContent className="p-4">
-        <Link href={`/auctions/${auction.id}`}>
-          <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-            {auction.title}
-          </h3>
-        </Link>
-        
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-          {auction.description}
-        </p>
-        
-        <div className="flex items-center justify-between mt-3">
-          <div>
-            <p className="text-xs text-muted-foreground">Current Bid</p>
-            <p className="text-lg font-bold text-primary">
-              RM {auction.currentPrice.toLocaleString()}
-            </p>
+    <Link href={`/auctions/${auction.id}`}>
+      <div className="group relative bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
+        {/* Image Container */}
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <Image
+            src={auction.image}
+            alt={auction.title}
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+          
+          {/* Live Badge */}
+          {auction.isLive && (
+            <div className="absolute top-4 left-4 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+              LIVE
+            </div>
+          )}
+          
+          {/* Arrow Icon */}
+          <div className="absolute top-4 right-4 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <ArrowUpRight className="w-5 h-5 text-white" />
           </div>
           
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Bids</p>
-            <p className="text-sm font-medium flex items-center">
-              <Users className="mr-1 h-3 w-3" />
-              {auction.bidCount}
-            </p>
+          {/* Price Tag */}
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-gray-400 text-xs mb-1">Current Bid</p>
+                <p className="text-2xl font-black text-blytz-yellow">
+                  RM {auction.currentPrice.toLocaleString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-gray-400 text-xs mb-1">{isExpired ? 'Status' : 'Ends in'}</p>
+                <p className={`text-sm font-bold ${isExpired ? 'text-red-500' : 'text-white'}`}>
+                  {formatTime()}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center mt-4 pt-3 border-t">
-          <Avatar className="h-6 w-6 mr-2">
-            <AvatarImage src={auction.seller.avatar} />
-            <AvatarFallback>{auction.seller.name[0]}</AvatarFallback>
-          </Avatar>
-          <span className="text-xs text-muted-foreground truncate">
-            {auction.seller.name}
-          </span>
+        {/* Content */}
+        <div className="p-5">
+          <h3 className="font-bold text-white text-lg mb-2 line-clamp-1 group-hover:text-blytz-yellow transition-colors">
+            {auction.title}
+          </h3>
+          <p className="text-gray-500 text-sm mb-4 line-clamp-2">
+            {auction.description}
+          </p>
+          
+          {/* Seller & Bids */}
+          <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+            <div className="flex items-center gap-2">
+              <Image
+                src={auction.seller.avatar}
+                alt={auction.seller.name}
+                width={28}
+                height={28}
+                className="rounded-full"
+              />
+              <span className="text-gray-400 text-sm">{auction.seller.name}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+              <Users className="w-4 h-4" />
+              <span>{auction.bidCount} bids</span>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* Hover Glow */}
+        <div className="absolute inset-0 rounded-3xl bg-blytz-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      </div>
+    </Link>
   );
 }

@@ -25,12 +25,13 @@ import {
   Gavel,
   LogOut,
   Settings,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 
 const navLinks = [
-  { name: 'Browse', href: '/auctions', icon: Gavel },
-  { name: 'Live Streams', href: '/streams', icon: Video },
+  { name: 'Auctions', href: '/auctions', icon: Gavel },
+  { name: 'Streams', href: '/streams', icon: Video },
   { name: 'Sell', href: '/sell', icon: Plus },
 ];
 
@@ -39,65 +40,65 @@ export function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-neutral-800">
+      <div className="container-modern">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              B
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-blytz-yellow rounded-lg flex items-center justify-center">
+              <span className="text-black font-black text-xl">B</span>
             </div>
-            <span className="text-xl font-bold hidden sm:inline">Blytz</span>
+            <span className="text-xl font-black text-white hidden sm:block">BLYTZ</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="flex items-center space-x-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white rounded-full hover:bg-neutral-900 transition-all"
               >
-                <link.icon className="h-4 w-4" />
-                <span>{link.name}</span>
+                <link.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{link.name}</span>
               </Link>
             ))}
           </nav>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-6">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="hidden lg:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-blytz-yellow transition-colors" />
               <Input
                 type="search"
                 placeholder="Search auctions..."
-                className="pl-9 w-full"
+                className="w-full pl-11 pr-4 py-2 bg-neutral-900 border-neutral-800 rounded-full text-white placeholder:text-gray-500 focus:border-blytz-yellow focus:ring-blytz-yellow/20"
               />
             </div>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             {/* Mobile Search Toggle */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="lg:hidden text-gray-300 hover:text-white hover:bg-neutral-900"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
-              <Search className="h-5 w-5" />
+              {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blytz-red" />
+            <Button variant="ghost" size="icon" className="relative text-gray-300 hover:text-white hover:bg-neutral-900">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blytz-yellow rounded-full" />
             </Button>
 
             {/* Watchlist */}
-            <Link href="/watchlist">
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Heart className="h-5 w-5" />
+            <Link href="/watchlist" className="hidden sm:block">
+              <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white hover:bg-neutral-900">
+                <Heart className="w-5 h-5" />
               </Button>
             </Link>
 
@@ -105,74 +106,82 @@ export function Header() {
             {isAuthenticated ? (
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Avatar className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-neutral-900">
+                    <Avatar className="w-8 h-8 border-2 border-neutral-800">
                       <AvatarImage src={user?.avatar_url} />
-                      <AvatarFallback>{user?.first_name?.[0] || 'U'}</AvatarFallback>
+                      <AvatarFallback className="bg-blytz-yellow text-black font-bold">
+                        {user?.first_name?.[0] || 'U'}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent className="bg-neutral-900 border-neutral-800">
                   <SheetHeader>
-                    <SheetTitle>My Account</SheetTitle>
+                    <SheetTitle className="text-white">My Account</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-neutral-800">
+                      <Avatar className="w-12 h-12">
                         <AvatarImage src={user?.avatar_url} />
-                        <AvatarFallback>{user?.first_name?.[0] || 'U'}</AvatarFallback>
+                        <AvatarFallback className="bg-blytz-yellow text-black font-bold">
+                          {user?.first_name?.[0] || 'U'}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user?.first_name || 'User'}</p>
-                        <p className="text-sm text-muted-foreground">{user?.email}</p>
+                        <p className="font-bold text-white">{user?.first_name || 'User'}</p>
+                        <p className="text-sm text-gray-400">{user?.email}</p>
                       </div>
                     </div>
-                    <Separator />
-                    <nav className="space-y-2">
+                    <Separator className="bg-neutral-800" />
+                    <nav className="space-y-1">
                       <Link href="/profile">
-                        <Button variant="ghost" className="w-full justify-start">
-                          <User className="mr-2 h-4 w-4" />
+                        <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                          <User className="mr-3 w-4 h-4" />
                           Profile
                         </Button>
                       </Link>
                       <Link href="/my-auctions">
-                        <Button variant="ghost" className="w-full justify-start">
-                          <Gavel className="mr-2 h-4 w-4" />
+                        <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                          <Gavel className="mr-3 w-4 h-4" />
                           My Auctions
                         </Button>
                       </Link>
                       <Link href="/orders">
-                        <Button variant="ghost" className="w-full justify-start">
-                          <ShoppingBag className="mr-2 h-4 w-4" />
+                        <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                          <ShoppingBag className="mr-3 w-4 h-4" />
                           Orders
                         </Button>
                       </Link>
                       <Link href="/settings">
-                        <Button variant="ghost" className="w-full justify-start">
-                          <Settings className="mr-2 h-4 w-4" />
+                        <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                          <Settings className="mr-3 w-4 h-4" />
                           Settings
                         </Button>
                       </Link>
                     </nav>
-                    <Separator />
+                    <Separator className="bg-neutral-800" />
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-destructive"
+                      className="w-full justify-start text-red-500 hover:text-red-400 hover:bg-red-500/10"
                       onClick={logout}
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
+                      <LogOut className="mr-3 w-4 h-4" />
                       Logout
                     </Button>
                   </div>
                 </SheetContent>
               </Sheet>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Link href="/login" className="hidden sm:block">
-                  <Button variant="ghost">Login</Button>
+                  <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-neutral-900">
+                    Login
+                  </Button>
                 </Link>
                 <Link href="/register">
-                  <Button>Sign Up</Button>
+                  <Button className="bg-blytz-yellow text-black hover:brightness-110 rounded-full font-semibold">
+                    Sign Up
+                  </Button>
                 </Link>
               </div>
             )}
@@ -180,33 +189,33 @@ export function Header() {
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="md:hidden text-gray-300 hover:text-white hover:bg-neutral-900">
+                  <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
+              <SheetContent side="right" className="bg-neutral-900 border-neutral-800">
                 <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
+                  <SheetTitle className="text-white">Menu</SheetTitle>
                 </SheetHeader>
-                <nav className="mt-6 space-y-2">
+                <nav className="mt-6 space-y-1">
                   {navLinks.map((link) => (
                     <Link key={link.name} href={link.href}>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <link.icon className="mr-2 h-4 w-4" />
+                      <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                        <link.icon className="mr-3 w-4 h-4" />
                         {link.name}
                       </Button>
                     </Link>
                   ))}
-                  <Separator className="my-4" />
+                  <Separator className="bg-neutral-800 my-4" />
                   <Link href="/watchlist">
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Heart className="mr-2 h-4 w-4" />
+                    <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                      <Heart className="mr-3 w-4 h-4" />
                       Watchlist
                     </Button>
                   </Link>
                   <Link href="/notifications">
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Bell className="mr-2 h-4 w-4" />
+                    <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white hover:bg-neutral-800">
+                      <Bell className="mr-3 w-4 h-4" />
                       Notifications
                     </Button>
                   </Link>
@@ -218,13 +227,13 @@ export function Header() {
 
         {/* Mobile Search Bar */}
         {isSearchOpen && (
-          <div className="md:hidden py-3">
+          <div className="lg:hidden py-4 border-t border-neutral-800">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Search auctions..."
-                className="pl-9 w-full"
+                className="w-full pl-11 pr-4 py-2 bg-neutral-900 border-neutral-800 rounded-full text-white placeholder:text-gray-500"
                 autoFocus
               />
             </div>

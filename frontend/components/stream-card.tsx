@@ -2,9 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Play, Users, Package, Star } from 'lucide-react';
 
 interface StreamCardProps {
@@ -35,65 +32,78 @@ export function StreamCard({ stream }: StreamCardProps) {
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-      <Link href={`/streams/${stream.id}`}>
-        <div className="relative aspect-video overflow-hidden bg-muted">
+    <Link href={`/streams/${stream.id}`}>
+      <div className="group relative bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
+        {/* Thumbnail */}
+        <div className="relative aspect-video overflow-hidden">
           <Image
             src={stream.thumbnail}
             alt={stream.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="h-16 w-16 rounded-full bg-blytz-red flex items-center justify-center">
-              <Play className="h-8 w-8 text-white fill-current ml-1" />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+          
+          {/* Play Button */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="w-16 h-16 rounded-full bg-blytz-yellow flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
+              <Play className="w-6 h-6 text-black fill-current ml-1" />
             </div>
           </div>
           
-          <Badge className="absolute top-3 left-3 bg-blytz-red hover:bg-blytz-red text-white animate-pulse-live">
+          {/* Live Badge */}
+          <div className="absolute top-4 left-4 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
             LIVE
-          </Badge>
+          </div>
           
-          <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center">
-            <Users className="mr-1 h-3 w-3" />
+          {/* Viewers */}
+          <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold rounded-full flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" />
             {stream.viewerCount.toLocaleString()}
           </div>
           
-          <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
+          {/* Duration */}
+          <div className="absolute bottom-4 left-4 px-2 py-1 bg-black/60 text-white text-xs rounded">
             {formatDuration(stream.startedAt)}
           </div>
         </div>
-      </Link>
-      
-      <CardContent className="p-4">
-        <Link href={`/streams/${stream.id}`}>
-          <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+        
+        {/* Content */}
+        <div className="p-5">
+          <h3 className="font-bold text-white text-lg mb-4 line-clamp-1 group-hover:text-blytz-yellow transition-colors">
             {stream.title}
           </h3>
-        </Link>
-        
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center">
-            <Avatar className="h-8 w-8 mr-2">
-              <AvatarImage src={stream.seller.avatar} />
-              <AvatarFallback>{stream.seller.name[0]}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium leading-none">{stream.seller.name}</p>
-              <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-                <Star className="mr-0.5 h-3 w-3 fill-yellow-400 text-yellow-400" />
-                {stream.seller.rating}
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Image
+                  src={stream.seller.avatar}
+                  alt={stream.seller.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full border-2 border-neutral-800"
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blytz-yellow rounded-full flex items-center justify-center">
+                  <Star className="w-2.5 h-2.5 text-black fill-current" />
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">{stream.seller.name}</p>
+                <p className="text-blytz-yellow text-xs font-medium">{stream.seller.rating} Rating</p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Package className="mr-1 h-3 w-3" />
-            {stream.productCount} items
+            
+            <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+              <Package className="w-4 h-4" />
+              <span>{stream.productCount}</span>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </Link>
   );
 }

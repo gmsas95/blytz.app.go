@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { AuctionCard } from '@/components/auction-card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 
 const featuredAuctions = [
   {
@@ -58,33 +58,34 @@ const featuredAuctions = [
 
 export function FeaturedAuctionsSection() {
   return (
-    <section className="py-12">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold">Featured Auctions</h2>
-          <p className="text-sm text-muted-foreground">Hot items ending soon</p>
+    <section className="section-padding bg-neutral-950">
+      <div className="container-modern">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blytz-yellow/10 border border-blytz-yellow/30 mb-4">
+              <Flame className="w-4 h-4 text-blytz-yellow" />
+              <span className="text-blytz-yellow text-sm font-semibold">HOT AUCTIONS</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-white">
+              FEATURED <span className="text-blytz-yellow">ITEMS</span>
+            </h2>
+            <p className="text-gray-400 mt-3 text-lg">Don&apos;t miss out on these incredible deals</p>
+          </div>
+          <Link href="/auctions">
+            <Button className="btn-primary gap-2">
+              View All
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
-        <Link href="/auctions">
-          <Button variant="ghost" className="hidden sm:flex">
-            View All
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {featuredAuctions.map((auction) => (
-          <AuctionCard key={auction.id} auction={auction} />
-        ))}
-      </div>
-      
-      <div className="mt-6 text-center sm:hidden">
-        <Link href="/auctions">
-          <Button variant="outline" className="w-full">
-            View All Auctions
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
+
+        {/* Auctions Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredAuctions.map((auction) => (
+            <AuctionCard key={auction.id} auction={auction} />
+          ))}
+        </div>
       </div>
     </section>
   );

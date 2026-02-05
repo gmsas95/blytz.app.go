@@ -64,7 +64,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'cdn.blytz.app', 'pub-*.r2.dev'],
+    domains: ['localhost', 'cdn.blytz.app', 'pub-*.r2.dev', 'images.unsplash.com', 'i.pravatar.cc'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -73,6 +73,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cdn.blytz.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
       },
     ],
   },
