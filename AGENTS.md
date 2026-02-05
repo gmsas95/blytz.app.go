@@ -70,15 +70,15 @@ Blytz is a **livestream ecommerce and auction platform** that enables:
 | # | Document | Description | Status |
 |---|----------|-------------|--------|
 | 11 | [11-environment-config.md](docs/11-environment-config.md) | Environment variables, secrets management | ✅ Complete |
-| 12 | [12-data-seeding.md](docs/12-data-seeding.md) | Sample data, initial setup scripts | ⏳ TODO |
-| 13 | [13-ui-design-system.md](docs/13-ui-design-system.md) | Colors, typography, Tailwind config | ⏳ TODO |
-| 14 | [14-error-handling.md](docs/14-error-handling.md) | Error codes, boundaries, logging | ⏳ TODO |
+| 12 | ~~12-data-seeding.md~~ | Sample data, initial setup scripts | ⏳ *Create when implementing seeding* |
+| 13 | ~~13-ui-design-system.md~~ | Colors, typography, Tailwind config | ⏳ *Create when building UI* |
+| 14 | ~~14-error-handling.md~~ | Error codes, boundaries, logging | ⏳ *Create when implementing error handling* |
 | 15 | [15-deployment-guide.md](docs/15-deployment-guide.md) | CI/CD, Kubernetes, deployment procedures | ✅ Complete |
 | 16 | [16-glossary.md](docs/16-glossary.md) | Business terms, Malay translations | ✅ Complete |
 | 17 | [17-integration-guide.md](docs/17-integration-guide.md) | Stripe, LiveKit, Socket.io, NinjaVan | ✅ Complete |
-| 18 | [18-hooks-utilities.md](docs/18-hooks-utilities.md) | Custom React hooks, Go utilities | ⏳ TODO |
-| 19 | [19-security-guidelines.md](docs/19-security-guidelines.md) | Security best practices, PCI compliance | ⏳ TODO |
-| 20 | [20-accessibility.md](docs/20-accessibility.md) | WCAG compliance, keyboard navigation | ⏳ TODO |
+| 18 | ~~18-hooks-utilities.md~~ | Custom React hooks, Go utilities | ⏳ *Create when building features* |
+| 19 | ~~19-security-guidelines.md~~ | Security best practices, PCI compliance | ⏳ *Create before security audit* |
+| 20 | ~~20-accessibility.md~~ | WCAG compliance, keyboard navigation | ⏳ *Create during a11y pass* |
 
 ### 📁 Platform-Specific Docs
 

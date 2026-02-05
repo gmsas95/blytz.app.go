@@ -36,14 +36,14 @@ Welcome to the Blytz livestream ecommerce platform documentation.
 |---|----------|-------------|
 | 11 | [Environment Configuration](11-environment-config.md) | Environment variables, secrets management |
 | 12 | [Data Seeding](12-data-seeding.md) | Sample data, initial setup scripts |
-| 13 | [UI Design System](13-ui-design-system.md) | Colors, typography, Tailwind config |
-| 14 | [Error Handling](14-error-handling.md) | Error codes, boundaries, logging |
+| 13 | ~~UI Design System~~ | Colors, typography, Tailwind config | ⏳ *To be created when building UI* |
+| 14 | ~~Error Handling~~ | Error codes, boundaries, logging | ⏳ *To be created when implementing error handling* |
 | 15 | [Deployment Guide](15-deployment-guide.md) | CI/CD, deployment, rollback procedures |
 | 16 | [Glossary](16-glossary.md) | Business terms, Malay translations |
 | 17 | [Integration Guide](17-integration-guide.md) | Third-party integrations (Stripe, LiveKit, etc.) |
-| 18 | [Hooks & Utilities](18-hooks-utilities.md) | Custom React hooks, Go utilities |
-| 19 | [Security Guidelines](19-security-guidelines.md) | Security best practices, PCI compliance |
-| 20 | [Accessibility](20-accessibility.md) | WCAG compliance, keyboard navigation |
+| 18 | ~~Hooks & Utilities~~ | Custom React hooks, Go utilities | ⏳ *To be created when building features* |
+| 19 | ~~Security Guidelines~~ | Security best practices, PCI compliance | ⏳ *To be created before security audit* |
+| 20 | ~~Accessibility~~ | WCAG compliance, keyboard navigation | ⏳ *To be created during a11y pass* |
 
 ## Platform-Specific Docs
 
