@@ -225,10 +225,9 @@ type PaymentMethod struct {
 }
 
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	// Migrate legacy models
+	if err := db.AutoMigrate(
 		&User{},
-		&Category{},
-		&Product{},
 		&Auction{},
 		&Bid{},
 		&AutoBid{},
@@ -238,5 +237,23 @@ func AutoMigrate(db *gorm.DB) error {
 		&CartItem{},
 		&Payment{},
 		&PaymentMethod{},
-	)
+	); err != nil {
+		return err
+	}
+	
+	// Migrate new product/category models
+	if err := AutoMigrateProduct(db); err != nil {
+		return err
+	}
+	
+	if err := AutoMigrateCategory(db); err != nil {
+		return err
+	}
+	
+	// Seed default categories
+	if err := SeedCategories(db); err != nil {
+		return err
+	}
+	
+	return nil
 }

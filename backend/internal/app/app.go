@@ -8,6 +8,8 @@ import (
 
 	"github.com/blytz/live/backend/internal/application/auction"
 	"github.com/blytz/live/backend/internal/application/auth"
+	"github.com/blytz/live/backend/internal/application/category"
+	"github.com/blytz/live/backend/internal/application/product"
 	userDomain "github.com/blytz/live/backend/internal/domain/user"
 	"github.com/blytz/live/backend/internal/infrastructure/cache/redis"
 	httpInfra "github.com/blytz/live/backend/internal/infrastructure/http"
@@ -26,8 +28,10 @@ type Application struct {
 	redis  *redis.Client
 	
 	// Services
-	authService    *auth.Service
-	auctionService *auction.Service
+	authService     *auth.Service
+	auctionService  *auction.Service
+	productService  *product.Service
+	categoryService *category.Service
 	
 	// Infrastructure
 	httpServer  *httpInfra.Server
@@ -206,6 +210,10 @@ func (a *Application) initServices() error {
 	userRepo := postgres.NewUserRepository(a.db)
 	auctionRepo := postgres.NewAuctionRepository(a.db)
 	
+	// Initialize repositories
+	productRepo := postgres.NewProductRepository(a.db)
+	categoryRepo := postgres.NewCategoryRepository(a.db)
+	
 	// Initialize auth service
 	a.authService = auth.NewService(
 		userRepo,
@@ -219,6 +227,12 @@ func (a *Application) initServices() error {
 		nil, // Cache - TODO: implement Redis cache
 		a.eventBus,
 	)
+	
+	// Initialize product service
+	a.productService = product.NewService(productRepo, categoryRepo)
+	
+	// Initialize category service
+	a.categoryService = category.NewService(categoryRepo)
 
 	log.Println("Services initialized")
 	return nil
@@ -227,8 +241,10 @@ func (a *Application) initServices() error {
 // initHTTPServer initializes the HTTP server
 func (a *Application) initHTTPServer() error {
 	handlers := &httpInfra.Handlers{
-		Auth:    handlers.NewAuthHandler(a.authService),
-		Auction: handlers.NewAuctionHandler(a.auctionService),
+		Auth:     handlers.NewAuthHandler(a.authService),
+		Auction:  handlers.NewAuctionHandler(a.auctionService),
+		Product:  handlers.NewProductHandler(a.productService),
+		Category: handlers.NewCategoryHandler(a.categoryService),
 	}
 
 	a.httpServer = httpInfra.NewServer(

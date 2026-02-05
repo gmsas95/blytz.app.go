@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blytz/live/backend/internal/domain/user"
+	userDomain "github.com/blytz/live/backend/internal/domain/user"
 	"github.com/blytz/live/backend/internal/infrastructure/cache/redis"
 	"github.com/blytz/live/backend/internal/interfaces/http/handlers"
 	"github.com/blytz/live/backend/internal/interfaces/middleware"
@@ -22,8 +22,10 @@ type Server struct {
 
 // Handlers holds all HTTP handlers
 type Handlers struct {
-	Auth    *handlers.AuthHandler
-	Auction *handlers.AuctionHandler
+	Auth     *handlers.AuthHandler
+	Auction  *handlers.AuctionHandler
+	Product  *handlers.ProductHandler
+	Category *handlers.CategoryHandler
 }
 
 // NewServer creates a new HTTP server
@@ -95,6 +97,25 @@ func (s *Server) setupRoutes(tokenManager user.TokenManager, redisClient *redis.
 		auctions.GET("/:id", s.handlers.Auction.GetAuction)
 	}
 
+	// Public product routes
+	products := v1.Group("/products")
+	products.Use(middleware.GeneralRateLimit(redisClient))
+	{
+		products.GET("", s.handlers.Product.List)
+		products.GET("/slug/:slug", s.handlers.Product.GetBySlug)
+		products.GET("/:id", s.handlers.Product.Get)
+	}
+
+	// Public category routes
+	categories := v1.Group("/categories")
+	categories.Use(middleware.GeneralRateLimit(redisClient))
+	{
+		categories.GET("", s.handlers.Category.List)
+		categories.GET("/tree", s.handlers.Category.GetTree)
+		categories.GET("/slug/:slug", s.handlers.Category.GetBySlug)
+		categories.GET("/:id", s.handlers.Category.Get)
+	}
+
 	// Protected routes
 	protected := v1.Group("")
 	protected.Use(middleware.AuthMiddleware(tokenManager))
@@ -110,12 +131,31 @@ func (s *Server) setupRoutes(tokenManager user.TokenManager, redisClient *redis.
 		protected.POST("/auctions/:id/bid", middleware.AuctionBidRateLimit(redisClient), s.handlers.Auction.PlaceBid)
 		protected.POST("/auctions/:id/start", s.handlers.Auction.StartAuction)
 		protected.POST("/auctions/:id/end", s.handlers.Auction.EndAuction)
+
+		// Products (protected - seller only)
+		protected.POST("/products", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.Create)
+		protected.PUT("/products/:id", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.Update)
+		protected.DELETE("/products/:id", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.Delete)
+		protected.POST("/products/:id/publish", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.Publish)
+		protected.POST("/products/:id/archive", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.Archive)
+		protected.GET("/my-products", middleware.RequireRole(userDomain.RoleSeller), s.handlers.Product.GetMyProducts)
 	}
 
 	// Admin routes
 	admin := v1.Group("/admin")
 	admin.Use(middleware.AuthMiddleware(tokenManager))
-	admin.Use(middleware.RequireRole(user.RoleAdmin))
+	admin.Use(middleware.RequireRole(userDomain.RoleAdmin))
+	{
+		// Categories (admin only)
+		admin.POST("/categories", s.handlers.Category.Create)
+		admin.PUT("/categories/:id", s.handlers.Category.Update)
+		admin.DELETE("/categories/:id", s.handlers.Category.Delete)
+	}
+
+	// Admin routes
+	admin := v1.Group("/admin")
+	admin.Use(middleware.AuthMiddleware(tokenManager))
+	admin.Use(middleware.RequireRole(userDomain.RoleAdmin))
 	{
 		// Admin endpoints here
 	}
