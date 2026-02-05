@@ -2,16 +2,150 @@
 
 ## Project Overview
 
-Blytz.app.go is a modern live marketplace platform designed for real-time auctions, bidding, and live streaming capabilities. The platform connects buyers and sellers through interactive live sessions with real-time product demonstrations and instant bidding functionality.
+Blytz is a **livestream ecommerce and auction platform** that enables:
+- 🎥 **Live streaming** - Sellers broadcast product demonstrations
+- 💰 **Real-time auctions** - Buyers place bids during live streams
+- 🛒 **Instant purchases** - Buy-now functionality alongside auctions
+- 💬 **Live chat** - Real-time interaction between sellers and buyers
+- 🚚 **Integrated logistics** - Seamless shipping with NinjaVan (Malaysia)
 
 ### Business Objectives
 - **Primary**: Create engaging live commerce experiences with real-time auctions
 - **Secondary**: Build a scalable marketplace supporting high concurrent users
 - **Tertiary**: Enable mobile-first experiences for on-the-go bidding
 
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Frontend** | Next.js 15+ | React web application |
+| **Backend** | Go 1.23+ / Bun | API server, business logic |
+| **Mobile** | Flutter 3+ | iOS/Android apps |
+| **Database** | PostgreSQL 17+ | Primary data storage |
+| **Cache** | Redis 8+ | Sessions, real-time data |
+| **Storage** | Cloudflare R2 | Image/video storage |
+| **Payments** | Stripe | Payment processing (Cards, FPX, E-wallets) |
+| **Streaming** | LiveKit | Live video streaming |
+| **Real-time** | Socket.io | Chat, bid notifications |
+| **Logistics** | NinjaVan | Malaysia shipping |
+
+## Documentation Index
+
+> 📚 **All documentation is in `/docs/` folder. Start with [00-getting-started.md](docs/00-getting-started.md)**
+
+### 📖 Quick Navigation
+
+| Learning Path | Start Here |
+|---------------|------------|
+| **New Developer** | [00-getting-started.md](docs/00-getting-started.md) → [02-architecture.md](docs/02-architecture.md) |
+| **Frontend Dev** | [05-components.md](docs/05-components.md) → [04-api-specifications.md](docs/04-api-specifications.md) |
+| **Backend Dev** | [backend/architecture.md](docs/backend/architecture.md) → [03-database-schema.md](docs/03-database-schema.md) |
+| **Mobile Dev** | [mobile/architecture.md](docs/mobile/architecture.md) → [04-api-specifications.md](docs/04-api-specifications.md) |
+| **DevOps** | [11-environment-config.md](docs/11-environment-config.md) → [15-deployment-guide.md](docs/15-deployment-guide.md) |
+
+### 📋 Tier 1: Getting Started
+
+| Document | Description |
+|----------|-------------|
+| [README.md](docs/README.md) | Documentation hub index |
+| [00-getting-started.md](docs/00-getting-started.md) | Main entry point, learning paths, quick reference |
+
+### 📋 Tier 2: Core Documentation
+
+| # | Document | Description | Status |
+|---|----------|-------------|--------|
+| 01 | [01-requirements.md](docs/01-requirements.md) | User requirements, acceptance criteria, user stories | ✅ Complete |
+| 02 | [02-architecture.md](docs/02-architecture.md) | System architecture, tech stack, data flow diagrams | ✅ Complete |
+| 03 | [03-database-schema.md](docs/03-database-schema.md) | PostgreSQL schema, entities, relationships | ✅ Complete |
+| 04 | [04-api-specifications.md](docs/04-api-specifications.md) | RESTful APIs, WebSocket events, error codes | ✅ Complete |
+| 05 | [05-components.md](docs/05-components.md) | Next.js components, pages, state management | ✅ Complete |
+| 06 | [06-permissions.md](docs/06-permissions.md) | RBAC system (buyer, seller, admin) | ✅ Complete |
+| 07 | [07-navigation.md](docs/07-navigation.md) | App routes, menu structure, deep linking | ✅ Complete |
+| 08 | [08-implementation-phases.md](docs/08-implementation-phases.md) | Phase-by-phase development roadmap | ✅ Complete |
+| 09 | [09-file-changes.md](docs/09-file-changes.md) | Project file organization reference | ✅ Complete |
+| 10 | [10-testing.md](docs/10-testing.md) | Unit, integration, E2E testing strategy | ✅ Complete |
+
+### 📋 Tier 3: Operational Documentation
+
+| # | Document | Description | Status |
+|---|----------|-------------|--------|
+| 11 | [11-environment-config.md](docs/11-environment-config.md) | Environment variables, secrets management | ✅ Complete |
+| 12 | [12-data-seeding.md](docs/12-data-seeding.md) | Sample data, initial setup scripts | ⏳ TODO |
+| 13 | [13-ui-design-system.md](docs/13-ui-design-system.md) | Colors, typography, Tailwind config | ⏳ TODO |
+| 14 | [14-error-handling.md](docs/14-error-handling.md) | Error codes, boundaries, logging | ⏳ TODO |
+| 15 | [15-deployment-guide.md](docs/15-deployment-guide.md) | CI/CD, Kubernetes, deployment procedures | ✅ Complete |
+| 16 | [16-glossary.md](docs/16-glossary.md) | Business terms, Malay translations | ✅ Complete |
+| 17 | [17-integration-guide.md](docs/17-integration-guide.md) | Stripe, LiveKit, Socket.io, NinjaVan | ✅ Complete |
+| 18 | [18-hooks-utilities.md](docs/18-hooks-utilities.md) | Custom React hooks, Go utilities | ⏳ TODO |
+| 19 | [19-security-guidelines.md](docs/19-security-guidelines.md) | Security best practices, PCI compliance | ⏳ TODO |
+| 20 | [20-accessibility.md](docs/20-accessibility.md) | WCAG compliance, keyboard navigation | ⏳ TODO |
+
+### 📁 Platform-Specific Docs
+
+| Platform | Path |
+|----------|------|
+| **Backend** | [backend/architecture.md](docs/backend/architecture.md) - Clean Architecture details |
+| **Backend** | [backend/folder-structure.md](docs/backend/folder-structure.md) - Code organization |
+| **Frontend** | [frontend/architecture.md](docs/frontend/architecture.md) - Next.js structure |
+| **Mobile** | [mobile/architecture.md](docs/mobile/architecture.md) - Flutter structure |
+
+### 🔌 Integration Docs
+
+| Integration | Path |
+|-------------|------|
+| **Stripe** | [17-integration-guide.md](docs/17-integration-guide.md) (section) |
+| **LiveKit** | [17-integration-guide.md](docs/17-integration-guide.md) (section) |
+| **Socket.io** | [17-integration-guide.md](docs/17-integration-guide.md) (section) |
+| **NinjaVan** | [17-integration-guide.md](docs/17-integration-guide.md) (section) |
+| **Cloudflare R2** | [17-integration-guide.md](docs/17-integration-guide.md) (section) |
+
+## Current Development Status
+
+### ✅ COMPLETED: Clean Architecture Foundation
+Migrated from module-based to Clean Architecture:
+- Domain layer with entities (User, Auction)
+- Application layer with services
+- Infrastructure layer with PostgreSQL, Redis, WebSocket
+- Interface layer with HTTP handlers
+- Dependency injection in app.go
+
+### ✅ COMPLETED: Documentation Structure
+Complete documentation framework:
+- Tier 1: Getting Started
+- Tier 2: Core Documentation (10 docs)
+- Tier 3: Operational Documentation (in progress)
+
+### 🔄 IN PROGRESS: Product & Auction System
+**Current State:**
+- ✅ Auction domain entity
+- ✅ Auction application service
+- ✅ Auction repository (Postgres)
+- ✅ WebSocket hub infrastructure
+- ✅ Event bus (Redis Pub/Sub)
+
+**TODO:**
+- ❌ Product domain (needs migration from old codebase)
+- ❌ WebSocket bidding endpoints
+- ❌ Auction lifecycle management (start/pause/end)
+- ❌ Real-time bid broadcasting
+- ❌ Winner determination
+
+### 📋 PLANNED: E-commerce System
+After Auction system completion:
+- Shopping cart (Cart, CartItem)
+- Order management (Order, OrderItem)
+- Payment processing (Stripe integration)
+- Address management
+- Inventory management
+
+### 📋 PLANNED: Live Streaming
+- LiveKit integration
+- Video streaming
+- Live chat during auctions
+
 ## Architecture Overview
 
-The backend follows **Clean Architecture** principles with a well-structured monolith design:
+The backend follows **Clean Architecture** principles:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -48,51 +182,6 @@ backend/
 │       └── middleware/               # Auth, rate limiting
 └── pkg/errors/                       # Custom errors
 ```
-
-## Current Development Status
-
-### ✅ COMPLETED: Clean Architecture Foundation (2025-02-04)
-Migrated from module-based to Clean Architecture:
-- Domain layer with entities (User, Auction)
-- Application layer with services
-- Infrastructure layer with PostgreSQL, Redis, WebSocket
-- Interface layer with HTTP handlers
-- Dependency injection in app.go
-
-### ✅ COMPLETED: Authentication System
-- JWT token management (access + refresh tokens)
-- User registration and login
-- Password hashing with bcrypt
-- Protected routes middleware
-- Role-based access control (buyer/seller/admin)
-
-### 🔄 IN PROGRESS: Product & Auction System
-**Current State:**
-- ✅ Auction domain entity
-- ✅ Auction application service
-- ✅ Auction repository (Postgres)
-- ✅ WebSocket hub infrastructure
-- ✅ Event bus (Redis Pub/Sub)
-
-**TODO:**
-- ❌ Product domain (needs migration from old codebase)
-- ❌ WebSocket bidding endpoints
-- ❌ Auction lifecycle management (start/pause/end)
-- ❌ Real-time bid broadcasting
-- ❌ Winner determination
-
-### 📋 PLANNED: E-commerce System
-After Auction system completion:
-- Shopping cart (Cart, CartItem)
-- Order management (Order, OrderItem)
-- Payment processing (Stripe integration)
-- Address management
-- Inventory management
-
-### 📋 PLANNED: Live Streaming
-- LiveKit integration
-- Video streaming
-- Live chat during auctions
 
 ## Domain Entities
 
@@ -140,7 +229,7 @@ type Bid struct {
 POST /api/v1/auth/register
 POST /api/v1/auth/login
 POST /api/v1/auth/refresh
-GET  /api/v1/auth/profile
+GET  /api/v1/auth/me
 POST /api/v1/auth/logout
 ```
 
@@ -272,14 +361,17 @@ func TestAuctionService_PlaceBid(t *testing.T) {
 }
 ```
 
-## Technology Stack
+## Running the Application
 
-- **Backend**: Go 1.23+, Gin framework
-- **Database**: PostgreSQL 17.7 with GORM
-- **Cache**: Redis 8+
-- **WebSocket**: Gorilla WebSocket
-- **Events**: Redis Pub/Sub
-- **Auth**: JWT tokens
+```bash
+# Backend
+cd backend
+go mod tidy
+go run cmd/server/main.go
+
+# Server: http://localhost:8080
+# Health: http://localhost:8080/health
+```
 
 ## Environment Variables
 
@@ -303,15 +395,33 @@ PORT=8080
 ENV=development
 ```
 
-## Running the Application
+## Integration Configuration
 
+### Stripe
 ```bash
-cd backend
-go mod tidy
-go run cmd/server/main.go
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
-# Server: http://localhost:8080
-# Health: http://localhost:8080/health
+### LiveKit
+```bash
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+LIVEKIT_WS_URL=wss://...
+```
+
+### NinjaVan
+```bash
+NINJAVAN_API_KEY=...
+NINJAVAN_API_SECRET=...
+```
+
+### Cloudflare R2
+```bash
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=...
 ```
 
 ## Key Files Reference
@@ -331,11 +441,14 @@ go run cmd/server/main.go
 | Auth Middleware | `internal/interfaces/middleware/auth.go` |
 | WebSocket Hub | `internal/infrastructure/websocket/hub.go` |
 
-## Documentation
+## Documentation Quick Links
 
-- **[Architecture PRD](BLYTZ_LIVE_ARCHITECTURE_PRD.md)** - Complete system architecture
-- **[Backend Architecture](docs/backend/architecture.md)** - Clean Architecture details
-- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - All documentation links
+- **[Getting Started](docs/00-getting-started.md)** - Start here!
+- **[Architecture](docs/02-architecture.md)** - System overview
+- **[Database Schema](docs/03-database-schema.md)** - Entity relationships
+- **[API Specs](docs/04-api-specifications.md)** - RESTful endpoints
+- **[Deployment Guide](docs/15-deployment-guide.md)** - Production setup
+- **[Glossary](docs/16-glossary.md)** - Business terms & Malay translations
 
 ## Important Notes
 
@@ -351,3 +464,7 @@ go run cmd/server/main.go
 2. **Auction WebSocket** - Real-time bidding functionality
 3. **Cart/Orders** - E-commerce foundation
 4. **LiveKit Integration** - Video streaming
+
+---
+
+**Full documentation available in `/docs/` folder**

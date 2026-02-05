@@ -1,226 +1,104 @@
-# Blytz.live.remake Development Progress
+# Blytz Documentation Hub
 
-## Project Overview
+Welcome to the Blytz livestream ecommerce platform documentation.
 
-Blytz.live.remake is a modern live marketplace platform designed for real-time auctions, bidding, and live streaming capabilities. The platform connects buyers and sellers through interactive live sessions with real-time product demonstrations and instant bidding functionality.
+## Quick Navigation
 
-## Current Development Status
+| Tier | Section | Purpose |
+|------|---------|---------|
+| **Tier 1** | [Getting Started](00-getting-started.md) | Main entry point, learning path |
+| **Tier 2** | [Core Documentation](#tier-2-core-documentation) | Architecture, APIs, components |
+| **Tier 3** | [Operations](#tier-3-operational-documentation) | Deployment, config, security |
 
-### Phase 1: Backend Foundation ✅ COMPLETED
-**Completion Date**: 2025-12-15
+## Documentation Index
 
-#### Implemented Features:
-- ✅ Project structure with clean architecture
-- ✅ Docker configuration for development
-- ✅ PostgreSQL + Redis database setup
-- ✅ GORM ORM integration with UUID primary keys
-- ✅ Core data models (User, Category, Product)
-- ✅ API foundation with Gin framework
-- ✅ CORS and middleware support
-- ✅ Health check endpoint
-- ✅ Environment configuration management
-- ✅ Logging infrastructure with logrus
+### Tier 1: Getting Started
+- [00-getting-started.md](00-getting-started.md) - How to navigate docs, learning paths
 
-#### Key Files Created:
-- `backend/cmd/server/main.go` - Main server entry point
-- `backend/internal/models/models.go` - Core data models
-- `backend/internal/database/connection.go` - Database connections
-- `backend/internal/config/config.go` - Configuration management
-- `backend/internal/middleware/middleware.go` - HTTP middleware
-- `backend/docker-compose.yml` - Development environment
+### Tier 2: Core Documentation
 
-### Phase 2: Authentication System ✅ COMPLETED
-**Completion Date**: 2025-12-15
+| # | Document | Description |
+|---|----------|-------------|
+| 01 | [Requirements](01-requirements.md) | User requirements, acceptance criteria, user stories |
+| 02 | [System Architecture](02-architecture.md) | Overall system design, tech stack overview |
+| 03 | [Database Schema](03-database-schema.md) | PostgreSQL schema, entities, relationships |
+| 04 | [API Specifications](04-api-specifications.md) | RESTful APIs, WebSocket events |
+| 05 | [Frontend Components](05-components.md) | Next.js components, pages, state management |
+| 06 | [Permissions & RBAC](06-permissions.md) | Role-based access control (buyer, seller, admin) |
+| 07 | [Navigation Structure](07-navigation.md) | App routes, menu structure, navigation flow |
+| 08 | [Implementation Phases](08-implementation-phases.md) | Phase-by-phase development roadmap |
+| 09 | [File Structure](09-file-changes.md) | Project file organization reference |
+| 10 | [Testing Strategy](10-testing.md) | Unit, integration, E2E testing |
 
-#### Implemented Features:
-- ✅ JWT token management (access + refresh tokens)
-- ✅ User registration and login
-- ✅ Password hashing with bcrypt
-- ✅ Protected routes with middleware
-- ✅ Role-based access control (buyer/seller/admin)
-- ✅ Rate limiting (auth: 5/min, general: 100/min)
-- ✅ Input validation and error handling
-- ✅ User profile management
-- ✅ Password change functionality
-- ✅ SQLite in-memory database for demo
+### Tier 3: Operational Documentation
 
-#### API Endpoints:
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User authentication
-- `POST /api/v1/auth/refresh` - Token refresh
-- `GET /api/v1/auth/profile` - User profile (protected)
-- `POST /api/v1/auth/change-password` - Password change (protected)
-- `POST /api/v1/auth/logout` - User logout (protected)
+| # | Document | Description |
+|---|----------|-------------|
+| 11 | [Environment Configuration](11-environment-config.md) | Environment variables, secrets management |
+| 12 | [Data Seeding](12-data-seeding.md) | Sample data, initial setup scripts |
+| 13 | [UI Design System](13-ui-design-system.md) | Colors, typography, Tailwind config |
+| 14 | [Error Handling](14-error-handling.md) | Error codes, boundaries, logging |
+| 15 | [Deployment Guide](15-deployment-guide.md) | CI/CD, deployment, rollback procedures |
+| 16 | [Glossary](16-glossary.md) | Business terms, Malay translations |
+| 17 | [Integration Guide](17-integration-guide.md) | Third-party integrations (Stripe, LiveKit, etc.) |
+| 18 | [Hooks & Utilities](18-hooks-utilities.md) | Custom React hooks, Go utilities |
+| 19 | [Security Guidelines](19-security-guidelines.md) | Security best practices, PCI compliance |
+| 20 | [Accessibility](20-accessibility.md) | WCAG compliance, keyboard navigation |
 
-#### Key Files Created:
-- `backend/internal/auth/models.go` - Authentication DTOs
-- `backend/internal/auth/jwt.go` - JWT token management
-- `backend/internal/auth/service.go` - Authentication business logic
-- `backend/internal/auth/handlers.go` - HTTP handlers
-- `backend/internal/middleware/rate_limiter.go` - Rate limiting
+## Platform-Specific Docs
 
-### Phase 3: Product Management 🔄 IN PROGRESS
-**Target Completion**: TBD
+### Backend (Go/Bun)
+- [Backend Architecture](backend/architecture.md) - Clean Architecture details
+- [Backend Folder Structure](backend/folder-structure.md) - Code organization
 
-#### Planned Features:
-- ⏳ Product CRUD operations
-- ⏳ Image upload and management
-- ⏳ Category associations
-- ⏳ Search and filtering
-- ⏳ Seller product management
-- ⏳ Buyer product browsing
+### Frontend (Next.js)
+- [Frontend Architecture](frontend/architecture.md) - Next.js App Router structure
+- [Component Library](frontend/components.md) - Reusable UI components
 
-### Phase 4: Auction System 📋 PLANNED
-**Target Start**: After Phase 3
+### Mobile (Flutter)
+- [Mobile Architecture](mobile/architecture.md) - Flutter project structure
+- [Mobile Navigation](mobile/navigation.md) - Routing and navigation
 
-#### Planned Features:
-- ⏳ Live auction sessions
-- ⏳ Real-time bidding system
-- ⏳ Bid management
-- ⏳ Auction lifecycle management
-- ⏳ WebSocket integration
+### Integrations
+- [Stripe Payments](integrations/stripe.md) - Payment processing
+- [LiveKit Streaming](integrations/livekit.md) - Livestream engine
+- [Socket.io Chat](integrations/socketio.md) - Real-time chat
+- [NinjaVan Logistics](integrations/ninjavan.md) - Malaysia shipping
 
-### Phase 5: Live Streaming 📋 PLANNED
-**Target Start**: After Phase 4
+## Tech Stack Summary
 
-#### Planned Features:
-- ⏳ LiveKit integration
-- ⏳ Video streaming capabilities
-- ⏳ Live chat during auctions
-- ⏳ Stream management
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| Frontend | Next.js 15+ | React web application |
+| Backend | Go 1.23+ / Bun | API server, business logic |
+| Mobile | Flutter 3+ | iOS/Android apps |
+| Database | PostgreSQL 17+ | Primary data storage |
+| Cache | Redis 8+ | Sessions, real-time data |
+| Storage | Cloudflare R2 | Image/video storage |
+| Payments | Stripe | Payment processing |
+| Streaming | LiveKit | Live video streaming |
+| Real-time | Socket.io | Chat, notifications |
+| Logistics | NinjaVan | Malaysia shipping |
 
-### Phase 6: Payment System 📋 PLANNED
-**Target Start**: After Phase 5
+## Development Quick Start
 
-#### Planned Features:
-- ⏳ Payment gateway integration
-- ⏳ Transaction management
-- ⏳ Order processing
-- ⏳ Refund handling
-
-### Phase 7: Mobile Application 📋 PLANNED
-**Target Start**: After Phase 6
-
-#### Planned Features:
-- ⏳ React Native app
-- ⏳ Mobile-optimized UI
-- ⏳ Push notifications
-- ⏳ Offline capabilities
-
-## Architecture Summary
-
-### Backend (Go)
-- **Framework**: Gin
-- **Database**: SQLite (demo) / PostgreSQL (production)
-- **Cache**: Redis
-- **Auth**: JWT with refresh tokens
-- **Architecture**: Clean architecture with proper module boundaries
-
-### Frontend (Planned)
-- **Framework**: Next.js 16+ with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Components**: Radix UI
-
-### Mobile (Planned)
-- **Framework**: React Native with Expo
-- **State**: Redux Toolkit
-- **Navigation**: React Navigation
-
-## Development Environment
-
-### Prerequisites
-- Go 1.21+
-- Node.js 18+ (for frontend development)
-- Docker & Docker Compose (optional)
-
-### Quick Start
 ```bash
 # Backend
 cd backend
-go run cmd/server/main.go
+bun install
+bun run dev
 
-# Server will be available at:
-# - Health: http://localhost:8080/health
-# - Auth API: http://localhost:8080/api/v1/auth/*
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# Mobile
+cd mobile
+flutter pub get
+flutter run
 ```
 
-## Testing Status
+---
 
-### Backend Tests
-- ✅ Authentication endpoints tested
-- ✅ JWT token flow verified
-- ⏳ Unit tests to be added
-- ⏳ Integration tests to be added
-
-## Security Implementation
-
-### Current Security Measures
-- ✅ Password hashing with bcrypt
-- ✅ JWT token authentication
-- ✅ Rate limiting on all endpoints
-- ✅ Input validation and sanitization
-- ✅ CORS configuration
-- ✅ SQL injection prevention (GORM)
-
-### Production Security Requirements
-- ⏳ HTTPS everywhere
-- ⏳ Environment-based secrets
-- ⏳ Advanced rate limiting (Redis-based)
-- ⏳ Account lockout for brute force
-- ⏳ Email verification
-- ⏳ Multi-factor authentication
-
-## Performance Metrics
-
-### Current Performance
-- Authentication latency: <50ms
-- Token validation: <10ms
-- Database operations: <20ms (SQLite)
-
-### Target Performance (Production)
-- API endpoints: <100ms (95th percentile)
-- Database queries: <50ms average
-- Cache hits: <10ms
-- WebSocket messages: <20ms
-
-## Documentation Structure
-
-- `docs/README.md` - This file - Project overview and progress
-- `docs/backend/` - Backend-specific documentation
-- `docs/frontend/` - Frontend-specific documentation (future)
-- `docs/mobile/` - Mobile-specific documentation (future)
-- `docs/api/` - API documentation
-- `backend/PHASE1_COMPLETE.md` - Phase 1 details
-- `backend/PHASE2_COMPLETE.md` - Phase 2 details
-
-## Next Steps
-
-1. **Immediate**: Start Phase 3 - Product Management System
-2. **Priority**: Implement unit and integration tests
-3. **Soon**: Set up PostgreSQL for production environment
-4. **Future**: Begin frontend development with Next.js
-
-## Contributing Guidelines
-
-### Code Standards
-- Follow Go formatting standards
-- Use clean architecture patterns
-- Implement comprehensive error handling
-- Add unit tests for new features
-
-### Branch Strategy
-- `main` - Production-ready code
-- `develop` - Integration branch
-- `feature/*` - Individual features
-- `hotfix/*` - Emergency fixes
-
-### Commit Convention
-```
-feat: Add new feature
-fix: Bug fix
-docs: Documentation update
-refactor: Code refactoring
-test: Add tests
-chore: Maintenance tasks
-```
+*Last updated: 2025-02-05*
