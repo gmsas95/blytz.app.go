@@ -224,6 +224,29 @@ export interface PaginatedResponse<T> {
   page_size: number;
 }
 
+// Frontend Product type (simplified for UI)
+export interface FrontendProduct {
+  id: string;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  category: string;
+  isFlash?: boolean;
+  isHot?: boolean;
+  timeLeft?: string;
+  description?: string;
+  sellerId?: string;
+  seller?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
 // Filter types
 export interface ProductFilter {
   category_id?: string;
@@ -245,4 +268,19 @@ export interface AuctionFilter {
   sort?: string;
   page?: number;
   per_page?: number;
+}
+
+// Cart types
+export interface CartItem {
+  id: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+  itemCount: number;
 }

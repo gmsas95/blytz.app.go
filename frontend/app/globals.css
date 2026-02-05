@@ -51,7 +51,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
     @apply bg-background text-foreground;
@@ -97,5 +97,40 @@
   .no-select {
     user-select: none;
     -webkit-user-select: none;
+  }
+  
+  /* Custom animations for live indicator */
+  @keyframes pulse-live {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  .animate-pulse-live {
+    animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Brand colors */
+  .bg-blytz-red {
+    background-color: #FF4444;
+  }
+  
+  .bg-blytz-red-dark {
+    background-color: #CC3333;
+  }
+  
+  .text-blytz-red {
+    color: #FF4444;
+  }
+  
+  .bg-blytz-gold {
+    background-color: #FFD700;
+  }
+  
+  .text-blytz-gold {
+    color: #FFD700;
   }
 }

@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Product, ProductFilter } from '../types';
+import { FrontendProduct as Product, ProductFilter } from '../types';
 
 export interface BackendProduct {
   id: string;
