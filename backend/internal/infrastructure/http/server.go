@@ -22,10 +22,12 @@ type Server struct {
 
 // Handlers holds all HTTP handlers
 type Handlers struct {
-	Auth     *handlers.AuthHandler
-	Auction  *handlers.AuctionHandler
-	Product  *handlers.ProductHandler
-	Category *handlers.CategoryHandler
+	Auth      *handlers.AuthHandler
+	Auction   *handlers.AuctionHandler
+	Product   *handlers.ProductHandler
+	Category  *handlers.CategoryHandler
+	AuctionWS *handlers.AuctionWSHandler
+	Upload    *handlers.UploadHandler
 }
 
 // NewServer creates a new HTTP server
@@ -95,6 +97,23 @@ func (s *Server) setupRoutes(tokenManager user.TokenManager, redisClient *redis.
 		auctions.GET("", s.handlers.Auction.ListLiveAuctions)
 		auctions.GET("/live", s.handlers.Auction.ListLiveAuctions)
 		auctions.GET("/:id", s.handlers.Auction.GetAuction)
+	}
+
+	// WebSocket endpoint for auctions (public, but auth recommended)
+	s.router.GET("/ws/auctions/:id", func(c *gin.Context) {
+		s.handlers.AuctionWS.HandleWebSocket(c)
+	})
+
+	// Upload endpoints (protected)
+	uploads := v1.Group("/uploads")
+	uploads.Use(middleware.AuthMiddleware(tokenManager))
+	uploads.Use(middleware.GeneralRateLimit(redisClient))
+	{
+		uploads.POST("/product-image", s.handlers.Upload.UploadProductImage)
+		uploads.POST("/avatar", s.handlers.Upload.UploadAvatar)
+		uploads.POST("/stream-thumbnail", s.handlers.Upload.UploadStreamThumbnail)
+		uploads.POST("/:folder", s.handlers.Upload.UploadGeneric)
+		uploads.DELETE("", s.handlers.Upload.DeleteFile)
 	}
 
 	// Public product routes

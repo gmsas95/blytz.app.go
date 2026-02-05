@@ -676,3 +676,388 @@ func (s *R2Storage) GeneratePresignedURL(ctx context.Context, key string, expiry
 ---
 
 *Last updated: 2025-02-05*
+
+
+---
+
+## WebSocket (Real-time Bidding)
+
+### Overview
+WebSocket provides real-time bid updates and auction events to connected clients.
+
+### Connection
+```javascript
+const ws = new WebSocket('wss://api.blytz.app/ws/auctions/{auction_id}');
+
+ws.onopen = () => {
+  console.log('Connected to auction');
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  handleMessage(message);
+};
+
+ws.onclose = () => {
+  console.log('Disconnected');
+};
+```
+
+### Message Types
+
+#### Bid Update
+```json
+{
+  "type": "bid",
+  "auction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "bid_id": "550e8400-e29b-41d4-a716-446655440001",
+    "user_id": "550e8400-e29b-41d4-a716-446655440002",
+    "amount": 1250.00,
+    "bid_count": 15,
+    "is_auto_bid": false
+  },
+  "timestamp": "2025-02-05T10:30:00Z"
+}
+```
+
+#### Auction Started
+```json
+{
+  "type": "auction_started",
+  "auction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "start_time": "2025-02-05T10:00:00Z",
+    "end_time": "2025-02-05T11:00:00Z"
+  },
+  "timestamp": "2025-02-05T10:00:00Z"
+}
+```
+
+#### Auction Ended
+```json
+{
+  "type": "auction_ended",
+  "auction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "winner_id": "550e8400-e29b-41d4-a716-446655440002",
+    "winning_amount": 1500.00,
+    "total_bids": 25
+  },
+  "timestamp": "2025-02-05T11:00:00Z"
+}
+```
+
+#### Viewer Count
+```json
+{
+  "type": "viewer_count",
+  "auction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "count": 45
+  },
+  "timestamp": "2025-02-05T10:30:00Z"
+}
+```
+
+#### Auction Extended
+```json
+{
+  "type": "auction_extended",
+  "auction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "new_end_time": "2025-02-05T11:05:00Z",
+    "extension_seconds": 300
+  },
+  "timestamp": "2025-02-05T11:00:00Z"
+}
+```
+
+### Backend Architecture
+
+The WebSocket system uses Redis Pub/Sub for cross-instance communication:
+
+```
+Client A (Server 1) -----> Redis Pub/Sub <----- Client B (Server 2)
+      |                                               |
+      |---> Bid placed ---> Broadcast to room -------->|
+```
+
+### Implementation
+
+```go
+// infrastructure/websocket/hub.go
+
+type Hub struct {
+  rooms map[string]*Room
+  redisClient *redis.Client
+  eventBus *redisMessaging.EventBus
+}
+
+func (h *Hub) HandleConnection(w http.ResponseWriter, r *http.Request, auctionID, userID string) {
+  // Upgrade to WebSocket
+  conn, err := h.upgrader.Upgrade(w, r, nil)
+  if err != nil {
+    return
+  }
+  
+  // Get or create room
+  room := h.getOrCreateRoom(auctionID)
+  
+  // Create client
+  client := &Client{
+    hub:       h,
+    conn:      conn,
+    room:      room,
+    userID:    userID,
+    auctionID: auctionID,
+  }
+  
+  // Register and broadcast viewer count
+  room.addClient(client)
+  h.broadcastViewerCount(auctionID)
+  
+  // Start pumps
+  go client.writePump()
+  go client.readPump()
+}
+
+func (h *Hub) handleEvent(event redisMessaging.Event) {
+  switch event.Type {
+  case redisMessaging.EventBidPlaced:
+    h.broadcastToRoom(event.AuctionID, Message{
+      Type: "bid",
+      Data: event.Payload,
+    })
+  // ... other events
+  }
+}
+```
+
+---
+
+## Cloudflare R2 (Image Storage)
+
+### Setup
+1. Create Cloudflare account: https://dash.cloudflare.com
+2. Enable R2: https://dash.cloudflare.com/?to=/:account/r2
+3. Create bucket
+4. Create API token with R2 permissions
+
+### Configuration
+```bash
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET_NAME=blytz-storage
+R2_PUBLIC_URL=https://pub-xxx.r2.dev
+R2_CDN_URL=https://cdn.blytz.app  # Optional: custom domain
+```
+
+### Backend Implementation
+
+```go
+// infrastructure/storage/r2/client.go
+
+type Client struct {
+  s3Client  *s3.Client
+  bucket    string
+  publicURL string
+  cdnURL    string
+}
+
+func NewClient(cfg Config) (*Client, error) {
+  endpointResolver := aws.EndpointResolverWithOptionsFunc(
+    func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+      return aws.Endpoint{
+        URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", cfg.AccountID),
+      }, nil
+    })
+
+  awsCfg := aws.Config{
+    EndpointResolverWithOptions: endpointResolver,
+    Credentials: credentials.NewStaticCredentialsProvider(
+      cfg.AccessKeyID, cfg.SecretAccessKey, ""),
+    Region: "auto",
+  }
+
+  return &Client{
+    s3Client: s3.NewFromConfig(awsCfg),
+    bucket:   cfg.BucketName,
+  }, nil
+}
+
+func (c *Client) Upload(ctx context.Context, reader io.Reader, 
+  filename string, opts UploadOptions) (*UploadResult, error) {
+  
+  // Generate unique key
+  key := fmt.Sprintf("%s/%s%s", opts.Folder, uuid.New().String(), 
+    filepath.Ext(filename))
+  
+  // Upload
+  _, err := c.s3Client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket:      aws.String(c.bucket),
+    Key:         aws.String(key),
+    Body:        reader,
+    ContentType: aws.String(opts.ContentType),
+  })
+  
+  return &UploadResult{
+    URL: c.getPublicURL(key),
+    Key: key,
+  }, nil
+}
+```
+
+### Upload Service
+
+```go
+// application/upload/service.go
+
+type Service struct {
+  r2Client *r2.Client
+}
+
+func (s *Service) UploadProductImage(ctx context.Context, file io.Reader, 
+  filename string, size int64) (*UploadResult, error) {
+  
+  // Validate
+  if size > 10*1024*1024 {
+    return nil, fmt.Errorf("file too large: max 10MB")
+  }
+  
+  result, err := s.r2Client.Upload(ctx, file, filename, r2.UploadOptions{
+    Folder:            "products",
+    GenerateThumbnail: true,
+    AllowedTypes:      []string{"image/"},
+  })
+  
+  return &UploadResult{
+    URL:          result.URL,
+    ThumbnailURL: result.ThumbnailURL,
+  }, nil
+}
+```
+
+### API Endpoints
+
+#### Upload Product Image
+```bash
+POST /api/v1/uploads/product-image
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+
+file: [binary image data]
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "url": "https://cdn.blytz.app/products/xxx.jpg",
+    "thumbnail_url": "https://cdn.blytz.app/products/xxx-thumb.jpg",
+    "key": "products/xxx.jpg",
+    "content_type": "image/jpeg",
+    "size": 2048000
+  }
+}
+```
+
+#### Upload Avatar
+```bash
+POST /api/v1/uploads/avatar
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+
+file: [binary image data]
+```
+
+#### Upload Stream Thumbnail
+```bash
+POST /api/v1/uploads/stream-thumbnail
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+
+file: [binary image data]
+```
+
+#### Delete File
+```bash
+DELETE /api/v1/uploads
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "key": "products/xxx.jpg"
+}
+```
+
+### File Structure in R2
+```
+blytz-storage/
+├── products/
+│   ├── xxx.jpg
+│   ├── yyy.png
+│   └── zzz.webp
+├── avatars/
+│   ├── user-1.jpg
+│   └── user-2.png
+├── streams/
+│   ├── stream-1-thumb.jpg
+│   └── stream-2-thumb.jpg
+└── temp/
+    └── [temporary uploads]
+```
+
+### Frontend Usage
+
+```typescript
+// Upload product image
+async function uploadProductImage(file: File): Promise<UploadResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch('/api/v1/uploads/product-image', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  return response.json();
+}
+
+// Use in product creation
+async function createProductWithImage(productData, imageFile) {
+  // 1. Upload image first
+  const uploadResult = await uploadProductImage(imageFile);
+  
+  // 2. Create product with image URL
+  const product = await createProduct({
+    ...productData,
+    images: [{ url: uploadResult.data.url, is_primary: true }],
+  });
+  
+  return product;
+}
+```
+
+### Image Optimization (Optional)
+
+For production, use Cloudflare Images or Image Resizing:
+
+```html
+<!-- Original image -->
+<img src="https://cdn.blytz.app/products/xxx.jpg" />
+
+<!-- Resized via Cloudflare -->
+<img src="https://cdn.blytz.app/cdn-cgi/image/width=500/products/xxx.jpg" />
+
+<!-- With WebP conversion -->
+<img src="https://cdn.blytz.app/cdn-cgi/image/width=500,format=webp/products/xxx.jpg" />
+```
+
+---
+
+*Last updated: 2025-02-05*

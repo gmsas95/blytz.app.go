@@ -10,6 +10,7 @@ import (
 	"github.com/blytz/live/backend/internal/application/auth"
 	"github.com/blytz/live/backend/internal/application/category"
 	"github.com/blytz/live/backend/internal/application/product"
+	"github.com/blytz/live/backend/internal/application/upload"
 	userDomain "github.com/blytz/live/backend/internal/domain/user"
 	"github.com/blytz/live/backend/internal/infrastructure/cache/redis"
 	httpInfra "github.com/blytz/live/backend/internal/infrastructure/http"
@@ -32,6 +33,10 @@ type Application struct {
 	auctionService  *auction.Service
 	productService  *product.Service
 	categoryService *category.Service
+	uploadService   *upload.Service
+	
+	// Infrastructure
+	r2Client    *r2.Client
 	
 	// Infrastructure
 	httpServer  *httpInfra.Server
@@ -47,6 +52,7 @@ type Config struct {
 	Database    postgres.Config
 	Redis       redis.Config
 	JWTSecret   string
+	R2          r2.Config
 }
 
 // New creates a new Application instance
@@ -206,11 +212,17 @@ func (a *Application) initEventBus() error {
 
 // initServices initializes domain services
 func (a *Application) initServices() error {
+	// Initialize R2 client
+	r2Client, err := r2.NewClient(a.config.R2)
+	if err != nil {
+		return fmt.Errorf("failed to initialize R2 client: %w", err)
+	}
+	a.r2Client = r2Client
+	log.Println("R2 client initialized")
+	
 	// Initialize repositories
 	userRepo := postgres.NewUserRepository(a.db)
 	auctionRepo := postgres.NewAuctionRepository(a.db)
-	
-	// Initialize repositories
 	productRepo := postgres.NewProductRepository(a.db)
 	categoryRepo := postgres.NewCategoryRepository(a.db)
 	
@@ -233,6 +245,9 @@ func (a *Application) initServices() error {
 	
 	// Initialize category service
 	a.categoryService = category.NewService(categoryRepo)
+	
+	// Initialize upload service
+	a.uploadService = upload.NewService(a.r2Client)
 
 	log.Println("Services initialized")
 	return nil
@@ -241,10 +256,12 @@ func (a *Application) initServices() error {
 // initHTTPServer initializes the HTTP server
 func (a *Application) initHTTPServer() error {
 	handlers := &httpInfra.Handlers{
-		Auth:     handlers.NewAuthHandler(a.authService),
-		Auction:  handlers.NewAuctionHandler(a.auctionService),
-		Product:  handlers.NewProductHandler(a.productService),
-		Category: handlers.NewCategoryHandler(a.categoryService),
+		Auth:      handlers.NewAuthHandler(a.authService),
+		Auction:   handlers.NewAuctionHandler(a.auctionService),
+		Product:   handlers.NewProductHandler(a.productService),
+		Category:  handlers.NewCategoryHandler(a.categoryService),
+		AuctionWS: handlers.NewAuctionWSHandler(a.wsHub),
+		Upload:    handlers.NewUploadHandler(a.uploadService),
 	}
 
 	a.httpServer = httpInfra.NewServer(

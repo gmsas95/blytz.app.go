@@ -103,9 +103,9 @@ Blytz is a **livestream ecommerce and auction platform** that enables:
 
 ### ✅ COMPLETED: Clean Architecture Foundation
 Migrated from module-based to Clean Architecture:
-- Domain layer with entities (User, Auction)
+- Domain layer with entities (User, Auction, Product, Category)
 - Application layer with services
-- Infrastructure layer with PostgreSQL, Redis, WebSocket
+- Infrastructure layer with PostgreSQL, Redis, WebSocket, R2
 - Interface layer with HTTP handlers
 - Dependency injection in app.go
 
@@ -113,22 +113,36 @@ Migrated from module-based to Clean Architecture:
 Complete documentation framework:
 - Tier 1: Getting Started
 - Tier 2: Core Documentation (10 docs)
-- Tier 3: Operational Documentation (in progress)
+- Tier 3: Operational Documentation (essential docs)
 
-### 🔄 IN PROGRESS: Product & Auction System
-**Current State:**
-- ✅ Auction domain entity
-- ✅ Auction application service
-- ✅ Auction repository (Postgres)
-- ✅ WebSocket hub infrastructure
-- ✅ Event bus (Redis Pub/Sub)
+### ✅ COMPLETED: Product & Category System
+**Implemented:**
+- ✅ Product domain entity with images, stock management
+- ✅ Category domain with tree structure
+- ✅ Product CRUD, filtering, search
+- ✅ Category management
+- ✅ PostgreSQL repositories with GORM
+- ✅ HTTP REST API endpoints
+- ✅ Default category seeding
 
-**TODO:**
-- ❌ Product domain (needs migration from old codebase)
-- ❌ WebSocket bidding endpoints
-- ❌ Auction lifecycle management (start/pause/end)
-- ❌ Real-time bid broadcasting
-- ❌ Winner determination
+### ✅ COMPLETED: Auction WebSocket
+**Implemented:**
+- ✅ WebSocket hub with room management
+- ✅ Real-time bid broadcasting
+- ✅ Viewer count tracking
+- ✅ Event types: bid, auction_started, auction_ended, viewer_count
+- ✅ Redis Pub/Sub for cross-instance sync
+- ✅ WS endpoint: `/ws/auctions/:id`
+
+### ✅ COMPLETED: Cloudflare R2 Image Upload
+**Implemented:**
+- ✅ R2 client (S3-compatible)
+- ✅ Upload service with validation
+- ✅ Product image upload
+- ✅ Avatar upload
+- ✅ Stream thumbnail upload
+- ✅ File deletion
+- ✅ API endpoints: `POST /api/v1/uploads/*`
 
 ### 📋 PLANNED: E-commerce System
 After Auction system completion:
@@ -247,6 +261,22 @@ GET    /api/v1/auctions/:id/bids # Get bid history
 ### WebSocket
 ```
 WS /ws/auctions/:id              # Real-time auction updates
+
+Events:
+- bid              # New bid placed
+- auction_started  # Auction went live
+- auction_ended    # Auction completed
+- viewer_count     # Viewer count update
+- auction_extended # Auction time extended
+```
+
+### Uploads (R2)
+```
+POST /api/v1/uploads/product-image      # Upload product image
+POST /api/v1/uploads/avatar             # Upload user avatar
+POST /api/v1/uploads/stream-thumbnail   # Upload stream thumbnail
+POST /api/v1/uploads/:folder            # Generic upload
+DELETE /api/v1/uploads                  # Delete file
 ```
 
 ## Development Guidelines
