@@ -35,7 +35,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
 
   return (
     <Link href={`/auctions/${auction.id}`}>
-      <div className="group relative bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
+      <div className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image

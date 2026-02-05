@@ -43,7 +43,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="section-padding bg-neutral-950">
+    <section className="section-padding bg-black">
       <div className="container-modern">
         {/* Header */}
         <div className="text-center mb-16">
@@ -62,7 +62,7 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="group relative p-8 rounded-3xl bg-neutral-900 border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300 hover:transform hover:-translate-y-1"
+              className="group relative p-8 rounded-3xl bg-[#0a0a0a] border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300 hover:transform hover:-translate-y-1"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Icon */}

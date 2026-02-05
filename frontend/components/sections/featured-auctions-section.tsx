@@ -58,7 +58,7 @@ const featuredAuctions = [
 
 export function FeaturedAuctionsSection() {
   return (
-    <section className="section-padding bg-neutral-950">
+    <section className="section-padding bg-[#0a0a0a]">
       <div className="container-modern">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">

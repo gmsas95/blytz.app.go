@@ -5,7 +5,7 @@ import { Apple, Play, Bell, Zap, Shield } from 'lucide-react';
 
 export function AppDownloadSection() {
   return (
-    <section className="section-padding bg-neutral-950 relative overflow-hidden">
+    <section className="section-padding bg-black relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blytz-yellow/10 rounded-full blur-[100px]" />

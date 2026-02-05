@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
+import { useMounted } from '@/hooks/use-mounted';
 
 const navLinks = [
   { name: 'Auctions', href: '/auctions', icon: Gavel },
@@ -38,6 +39,26 @@ const navLinks = [
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
+  const mounted = useMounted();
+
+  // Prevent hydration mismatch by rendering placeholder during SSR
+  if (!mounted) {
+    return (
+      <header className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-neutral-800">
+        <div className="container-modern">
+          <div className="flex h-16 items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-blytz-yellow rounded-lg flex items-center justify-center">
+                <span className="text-black font-black text-xl">B</span>
+              </div>
+              <span className="text-xl font-black text-white hidden sm:block">BLYTZ</span>
+            </Link>
+            <div className="w-8 h-8" />
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-black/80 backdrop-blur-xl border-b border-neutral-800">

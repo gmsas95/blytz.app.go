@@ -4,29 +4,6 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 48 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 48 100% 50%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 48 100% 50%;
-    --radius: 0.75rem;
-  }
-
-  .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
     --card: 0 0% 5%;
@@ -35,10 +12,10 @@
     --popover-foreground: 0 0% 100%;
     --primary: 48 100% 50%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted-foreground: 0 0% 60%;
     --accent: 48 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
@@ -46,6 +23,7 @@
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 48 100% 50%;
+    --radius: 0.75rem;
   }
 }
 
@@ -54,7 +32,7 @@
     border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black text-white;
     overscroll-behavior-y: none;
   }
   html {
@@ -72,21 +50,21 @@
     display: none;
   }
   
-  /* Brand Colors - Yellow/Black/White */
+  /* Brand Colors - Yellow/Black Only */
   .bg-blytz-yellow {
     background-color: #FFD700;
   }
   .bg-blytz-black {
     background-color: #000000;
   }
-  .bg-blytz-white {
-    background-color: #FFFFFF;
-  }
   .text-blytz-yellow {
     color: #FFD700;
   }
   .text-blytz-black {
     color: #000000;
+  }
+  .border-blytz-yellow {
+    border-color: #FFD700;
   }
   
   /* Modern Animations */
@@ -110,11 +88,6 @@
     to { opacity: 1; }
   }
   
-  @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  
   @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -136,53 +109,22 @@
     animation: fade-in 0.5s ease-out forwards;
   }
   
-  .animate-scale-in {
-    animation: scale-in 0.4s ease-out forwards;
-  }
-  
   .animate-marquee {
     animation: marquee 30s linear infinite;
   }
   
   /* Gradient Text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600;
-  }
-  
-  /* Glass Effect */
-  .glass {
-    @apply bg-white/80 backdrop-blur-xl border border-white/20;
-  }
-  
-  .glass-dark {
-    @apply bg-black/80 backdrop-blur-xl border border-white/10;
-  }
-  
-  /* Modern Card */
-  .card-modern {
-    @apply bg-white rounded-2xl border border-gray-100 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300;
-  }
-  
-  .card-modern-dark {
-    @apply bg-neutral-900 rounded-2xl border border-neutral-800 shadow-lg hover:shadow-xl transition-all duration-300;
-  }
-  
-  /* Button Styles */
-  .btn-primary {
-    @apply bg-blytz-yellow text-black font-semibold px-6 py-3 rounded-full hover:brightness-110 transition-all duration-200;
-  }
-  
-  .btn-outline {
-    @apply border-2 border-black text-black font-semibold px-6 py-3 rounded-full hover:bg-black hover:text-white transition-all duration-200;
-  }
-  
-  /* Section Spacing */
-  .section-padding {
-    @apply py-20 md:py-32;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-500;
   }
   
   /* Container */
   .container-modern {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Section Spacing */
+  .section-padding {
+    @apply py-20 md:py-32;
   }
 }

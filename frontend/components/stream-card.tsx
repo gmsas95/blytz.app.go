@@ -33,7 +33,7 @@ export function StreamCard({ stream }: StreamCardProps) {
 
   return (
     <Link href={`/streams/${stream.id}`}>
-      <div className="group relative bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
+      <div className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-neutral-800 hover:border-blytz-yellow/50 transition-all duration-300">
         {/* Thumbnail */}
         <div className="relative aspect-video overflow-hidden">
           <Image

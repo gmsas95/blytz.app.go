@@ -33,7 +33,7 @@ export function CategoriesSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((category) => (
             <Link key={category.slug} href={`/categories/${category.slug}`}>
-              <div className="group relative p-6 rounded-3xl bg-neutral-900 border border-neutral-800 hover:border-blytz-yellow/30 transition-all duration-300 hover:transform hover:-translate-y-1 overflow-hidden">
+              <div className="group relative p-6 rounded-3xl bg-[#0a0a0a] border border-neutral-800 hover:border-blytz-yellow/30 transition-all duration-300 hover:transform hover:-translate-y-1 overflow-hidden">
                 {/* Background Gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
                 

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="space-y-8 py-6">
+    <div className="bg-black">
       <HeroSection />
       <FeaturesSection />
       <LiveStreamsSection />
