@@ -1,50 +1,45 @@
 # Documentation Index
 
-Welcome to the Blytz.live.remake documentation hub. This index provides quick access to all project documentation.
+Welcome to the Blytz.app.go documentation hub. This index provides quick access to all project documentation.
 
 ## 📋 Quick Links
 
 ### Getting Started
 - **[Project README](../README.md)** - Project overview and quick start guide
-- **[Project Overview](README.md)** - Development status and progress tracker
+- **[AGENTS Guide](../AGENTS.md)** - AI/agent development guide with Clean Architecture
 - **[Architecture PRD](../BLYTZ_LIVE_ARCHITECTURE_PRD.md)** - Complete architecture specification
 
 ### Backend Development
-- **[Backend Architecture](backend/architecture.md)** - Technical architecture and design patterns
+- **[Backend Architecture](backend/architecture.md)** - Clean Architecture design and patterns
 - **[Development Guide](backend/development-guide.md)** - Setup, coding standards, and workflows
-- **[API Reference](../api/backend-api.md)** - Complete RESTful API documentation
-- **[Phase 1: Foundation](../backend/PHASE1_COMPLETE.md)** - Completed foundation implementation
-- **[Phase 2: Authentication](../backend/PHASE2_COMPLETE.md)** - Completed authentication system
+- **[API Reference](api/backend-api.md)** - RESTful API documentation
 
-### Frontend Development (Planned)
-- **[Frontend Architecture](frontend/architecture.md)** - Next.js and React architecture
-
-### Mobile Development (Planned)
-- **[Mobile Architecture](mobile/architecture.md)** - React Native and Expo architecture
+### Project Documentation
+- **[E-commerce Guide](ECOMMERCE_IMPLEMENTATION_GUIDE.md)** - E-commerce implementation plan
 
 ## 📊 Current Development Status
 
-### ✅ Completed Phases
-1. **Backend Foundation** - Clean architecture, database setup, API foundation
+### ✅ Completed
+1. **Clean Architecture Foundation** - Domain-driven design with proper layering
 2. **Authentication System** - JWT auth, user management, security features
-3. **Product Management** - CRUD operations, image upload, search
+3. **Infrastructure Layer** - PostgreSQL, Redis, WebSocket setup
 
 ### 🔄 In Progress
-4. **Basic E-commerce System** - Shopping cart, orders, payments, addresses
+4. **Product & Auction System** - Domain entities, WebSocket bidding
 
-### 📋 Planned Phases
-5. **Auction System** - Live auctions, real-time bidding
-6. **Live Streaming** - Video streaming capabilities
-7. **Payment System** - Advanced payment features
+### 📋 Planned
+5. **E-commerce System** - Shopping cart, orders, payments, addresses
+6. **Live Streaming** - LiveKit video streaming integration
 
 ## 🛠️ Development Resources
 
 ### Backend Quick Start
 ```bash
 cd backend
+go mod tidy
 go run cmd/server/main.go
+
 # Server: http://localhost:8080
-# API: http://localhost:8080/api/v1
 # Health: http://localhost:8080/health
 ```
 
@@ -65,107 +60,123 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 
 ### 1. Architecture & Design
 - [Architecture PRD](../BLYTZ_LIVE_ARCHITECTURE_PRD.md) - Complete system architecture
-- [Backend Architecture](backend/architecture.md) - Backend technical design
-- [Frontend Architecture](frontend/architecture.md) - Frontend technical design
-- [Mobile Architecture](mobile/architecture.md) - Mobile technical design
+- [Backend Architecture](backend/architecture.md) - Clean Architecture details
+- [AGENTS Guide](../AGENTS.md) - Development guide for AI agents
 
 ### 2. Development Guides
 - [Backend Development Guide](backend/development-guide.md) - Backend coding standards
-- [Project Overview](README.md) - Development phases and status
-- [AGENTS Guide](../AGENTS.md) - AI/agent development guide
-|- [E-commerce Implementation Guide](ECOMMERCE_IMPLEMENTATION_GUIDE.md) - E-commerce development plan
+- [E-commerce Implementation Guide](ECOMMERCE_IMPLEMENTATION_GUIDE.md) - E-commerce development plan
 
 ### 3. API Documentation
-- [Backend API Reference](../api/backend-api.md) - RESTful API endpoints
-
-### 4. Implementation Details
-- [Phase 1: Foundation](../backend/PHASE1_COMPLETE.md) - Backend foundation
-- [Phase 2: Authentication](../backend/PHASE2_COMPLETE.md) - Authentication system
-- [Phase 3: Product Management](../backend/PHASE3_COMPLETE.md) - Product management system
+- [Backend API Reference](api/backend-api.md) - RESTful API endpoints
 
 ## 🔍 Search Documentation
 
-### Looking for specific information?
-
-**Setting up development environment?**
+### Setting up development environment?
 → [Backend Development Guide](backend/development-guide.md)
 
-**Understanding the system architecture?**
+### Understanding the system architecture?
 → [Architecture PRD](../BLYTZ_LIVE_ARCHITECTURE_PRD.md)
+→ [Backend Architecture](backend/architecture.md)
 
-**API endpoint documentation?**
-→ [Backend API Reference](../api/backend-api.md)
+### API endpoint documentation?
+→ [Backend API Reference](api/backend-api.md)
 
-**Authentication implementation details?**
-→ [Phase 2: Authentication](../backend/PHASE2_COMPLETE.md)
+### Adding a new domain/feature?
+→ [AGENTS Guide](../AGENTS.md) - See "Adding a New Domain" section
 
-**Product management implementation details?**
-→ [Phase 3: Product Management](../backend/PHASE3_COMPLETE.md)
+### Current development progress?
+→ [AGENTS Guide](../AGENTS.md) - See "Current Development Status"
 
-**E-commerce implementation plan?**
+### E-commerce implementation plan?
 → [E-commerce Implementation Guide](ECOMMERCE_IMPLEMENTATION_GUIDE.md)
-
-**Backend coding standards?**
-→ [Backend Development Guide](backend/development-guide.md)
-
-**Current development progress?**
-→ [Project Overview](README.md)
 
 ## 🗂️ File Structure
 
 ```
 docs/
 ├── README.md                    # This documentation index
+├── DOCUMENTATION_INDEX.md       # Quick navigation (this file)
+├── ECOMMERCE_IMPLEMENTATION_GUIDE.md  # E-commerce plan
 ├── backend/                     # Backend documentation
-│   ├── architecture.md          # Backend technical architecture
+│   ├── architecture.md          # Clean Architecture design
 │   └── development-guide.md    # Development setup & standards
-├── frontend/                    # Frontend documentation (planned)
-│   └── architecture.md          # Frontend technical architecture
-├── mobile/                      # Mobile documentation (planned)
-│   └── architecture.md          # Mobile technical architecture
-└── api/                        # API documentation
-    └── backend-api.md          # RESTful API reference
+├── api/                        # API documentation
+│   └── backend-api.md          # RESTful API reference
+├── frontend/                   # Frontend documentation (planned)
+│   └── architecture.md
+└── mobile/                     # Mobile documentation (planned)
+    └── architecture.md
 
 Root Level:
 ├── README.md                    # Project overview & quick start
+├── AGENTS.md                   # AI agent development guide
 ├── BLYTZ_LIVE_ARCHITECTURE_PRD.md  # Complete architecture spec
-├── AGENTS.md                   # AI/agent development guide
+├── ARCHITECTURE_IDEAL.md       # Ideal future architecture
 └── backend/                     # Backend source code
-    ├── PHASE1_COMPLETE.md     # Phase 1 implementation details
-    └── PHASE2_COMPLETE.md     # Phase 2 implementation details
+    └── internal/               # Clean Architecture layers
+        ├── app/                # Dependency injection
+        ├── domain/             # Business entities
+        ├── application/        # Use cases
+        ├── infrastructure/     # Implementations
+        └── interfaces/         # HTTP handlers
 ```
+
+## 🏗️ Clean Architecture Overview
+
+The backend follows Clean Architecture with these layers:
+
+```
+┌─────────────────────────────────────────┐
+│  Interface Layer                        │
+│  - HTTP Handlers                        │
+│  - Middleware                           │
+│  - WebSocket                            │
+├─────────────────────────────────────────┤
+│  Application Layer                      │
+│  - Services                             │
+│  - Use Cases                            │
+│  - DTOs                                 │
+├─────────────────────────────────────────┤
+│  Domain Layer                           │
+│  - Entities                             │
+│  - Value Objects                        │
+│  - Repository Interfaces                │
+├─────────────────────────────────────────┤
+│  Infrastructure Layer                   │
+│  - PostgreSQL Repositories              │
+│  - Redis Cache                          │
+│  - WebSocket Hub                        │
+│  - External APIs                        │
+└─────────────────────────────────────────┘
+```
+
+Dependencies point **inward** - Domain has no external dependencies.
 
 ## 📈 Documentation Roadmap
 
-### Planned Documentation Additions
-
-**Backend**
+### Backend
+- [x] Clean Architecture documentation
+- [x] Development setup guide
 - [ ] Performance optimization guide
 - [ ] Security best practices
-- [ ] Database schema documentation
 - [ ] Testing strategies
+- [ ] Database schema documentation
 - [ ] Deployment guide
-- [ ] Monitoring & observability
 
-**Frontend**
+### Frontend
 - [ ] Component library documentation
 - [ ] State management patterns
-- [ ] Performance optimization
-- [ ] Testing strategies
-- [ ] Deployment guide
+- [ ] API integration guide
 
-**Mobile**
+### Mobile
 - [ ] Platform-specific features
-- [ ] Performance optimization
-- [ ] Testing strategies
-- [ ] App store deployment
-- [ ] Push notifications setup
+- [ ] API integration guide
 
-**API**
+### API
 - [ ] Interactive API documentation (Swagger)
 - [ ] Postman collections
-- [ ] Rate limiting details
-- [ ] Error handling reference
+- [ ] WebSocket documentation
 
 ## 🔗 External Resources
 
@@ -173,35 +184,27 @@ Root Level:
 - **Go**: https://golang.org/doc/
 - **Gin Framework**: https://gin-gonic.com/docs/
 - **GORM**: https://gorm.io/docs/
-- **Next.js**: https://nextjs.org/docs
-- **React Native**: https://reactnative.dev/docs
-- **Expo**: https://docs.expo.dev/
+- **PostgreSQL**: https://www.postgresql.org/docs/
+- **Redis**: https://redis.io/documentation
+- **Clean Architecture**: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 ### Development Tools
 - **Docker**: https://docs.docker.com/
-- **PostgreSQL**: https://www.postgresql.org/docs/
-- **Redis**: https://redis.io/documentation
-- **TypeScript**: https://www.typescriptlang.org/docs/
+- **GitHub CLI**: https://cli.github.com/manual/
 
 ## 📞 Support & Feedback
 
 ### Documentation Issues
-- Found outdated information? Create a documentation issue
+- Found outdated information? Create an issue
 - Missing information? Request additional documentation
 - Confusing explanations? Suggest improvements
 
 ### Contribution Guidelines
-1. Read existing documentation for style consistency
-2. Use clear, concise language
+1. Follow Clean Architecture principles
+2. Update related documentation when making changes
 3. Include code examples where helpful
-4. Update related documentation when making changes
-5. Follow the project's documentation structure
-
-### Contact
-- For project questions: Check main documentation
-- For documentation feedback: Create documentation issue
-- For urgent matters: Check project maintainers
+4. Keep domain logic framework-agnostic
 
 ---
 
-**This documentation is actively maintained and updated as the project evolves. Last updated: 2025-12-16**
+**This documentation is actively maintained. Last updated: 2025-02-05**

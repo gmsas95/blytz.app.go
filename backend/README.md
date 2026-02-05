@@ -1,101 +1,89 @@
-# Blytz.live Backend
+# Blytz Backend (Clean Architecture)
 
-## Overview
+## 🎯 Overview
 
-This is the backend for Blytz.live - a modern live marketplace platform for real-time auctions and bidding.
+This is the clean architecture rewrite of the Blytz.live backend.
 
-## Architecture
+**Key improvements:**
+- ✅ Clean 40-line main.go (was 448 lines)
+- ✅ Domain-driven design (no external dependencies in domain)
+- ✅ Repository pattern (testable, swappable)
+- ✅ Redis Pub/Sub for WebSocket scaling
+- ✅ Structured error handling
+- ✅ 100 DB connections (was 25)
 
-- **Framework**: Gin (HTTP framework)
-- **Database**: PostgreSQL 17.7 with GORM
-- **Cache**: Redis 8+ (for sessions and caching)
-- **Authentication**: JWT with refresh tokens
-- **Real-time**: Gorilla WebSocket (planned)
-
-## Project Structure
+## 📁 Structure
 
 ```
 backend/
 ├── cmd/
-│   ├── server/          # Main application entry point
-│   └── migrate/         # Database migration utility
+│   └── server/main.go              # Entry point (40 lines)
 ├── internal/
-│   ├── models/          # Data models
-│   ├── config/          # Configuration management
-│   ├── database/        # Database connections
-│   ├── middleware/      # HTTP middleware
-│   └── common/          # Shared utilities
-├── pkg/                 # Public packages
-│   ├── http/            # HTTP utilities
-│   ├── logging/         # Logging setup
-│   └── validation/      # Input validation
-└── tests/              # Test files
+│   ├── app/app.go                  # Application container (DI)
+│   ├── domain/                      # Business logic (pure)
+│   │   ├── auction/                # Auction, Bid, AutoBid entities
+│   │   ├── user/                   # User, auth interfaces
+│   │   ├── product/                # Product, Category entities
+│   │   ├── order/                  # Order, Cart entities
+│   │   └── payment/                # Payment, Gateway interfaces
+│   ├── application/                 # Use cases (TODO)
+│   │   ├── auth/                   # Auth service
+│   │   ├── auction/                # Auction service
+│   │   ├── catalog/                # Product service
+│   │   └── order/                  # Order service
+│   ├── infrastructure/              # External implementations
+│   │   ├── persistence/postgres/   # GORM repositories
+│   │   ├── cache/redis/            # Redis cache
+│   │   ├── messaging/redis/        # Event bus (Pub/Sub)
+│   │   ├── http/                   # HTTP server
+│   │   └── websocket/              # WebSocket hub (TODO)
+│   └── interfaces/                  # HTTP handlers, middleware
+│       ├── http/handlers/          # Route handlers
+│       └── middleware/             # Auth, rate limiting (TODO)
+├── pkg/
+│   └── errors/                     # Structured errors
+└── deployments/                     # Docker, Swarm configs (TODO)
 ```
 
-## Setup
+## 🚀 Quick Start
 
-### Prerequisites
-
-- Go 1.21+
-- PostgreSQL 17.7
-- Redis 8+
-
-### Installation
-
-1. Clone the repository
-2. Copy `.env.example` to `.env` and update values
-3. Install dependencies:
-   ```bash
-   go mod tidy
-   ```
-
-### Database Setup
-
-1. Create database:
-   ```sql
-   CREATE DATABASE blytz_dev;
-   ```
-
-2. Run migrations:
-   ```bash
-   go run cmd/migrate/main.go
-   ```
-
-### Running the Application
-
-Development:
 ```bash
+# 1. Install dependencies
+cd backend
+go mod init github.com/blytz/live/backend
+go mod tidy
+
+# 2. Set up environment
+cp .env.example .env
+# Edit .env with your DB and Redis credentials
+
+# 3. Run
 go run cmd/server/main.go
 ```
 
-Build:
-```bash
-go build -o blytz-server cmd/server/main.go
-./blytz-server
-```
+## 🏗️ Architecture Principles
 
-### Testing
+1. **Domain Layer**: Pure business logic, no external dependencies
+2. **Application Layer**: Use cases, orchestrates domain objects
+3. **Infrastructure Layer**: External concerns (DB, HTTP, etc.)
+4. **Interfaces Layer**: HTTP handlers, middleware
 
-Run all tests:
-```bash
-go test ./...
-```
+## 📊 Progress
 
-Run with coverage:
-```bash
-go test -cover ./...
-```
+| Component | Status |
+|-----------|--------|
+| Domain layer | ✅ Done |
+| Infrastructure (DB, Redis) | ✅ Done |
+| Application services | 🚧 In Progress |
+| WebSocket (Redis Pub/Sub) | 🚧 In Progress |
+| HTTP handlers | 🚧 In Progress |
+| Rate limiting (Redis) | 🚧 In Progress |
+| Docker Swarm config | 🚧 In Progress |
+| Tests | 🚧 In Progress |
 
-## API Endpoints
+## 📝 Notes
 
-- `GET /health` - Health check
-
-## Environment Variables
-
-See `.env.example` for required environment variables.
-
-## Contributing
-
-1. Follow Go coding standards
-2. Write tests for new features
-3. Ensure all tests pass before submitting PR
+- Old backend backed up to `../backend-old-backup.tar.gz`
+- This is a work in progress - not production ready yet
+- See `internal/domain/` for business rules
+- See `internal/infrastructure/` for implementations

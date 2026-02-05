@@ -2,7 +2,46 @@
 
 ## Overview
 
-The Blytz.live backend follows Clean Architecture principles with a well-structured monolith design. This architecture provides clear separation of concerns, testability, and the ability to extract microservices in the future if needed.
+The Blytz.live backend follows **Clean Architecture** principles with a well-structured monolith design. This architecture provides:
+- Clear separation of concerns
+- Domain-driven design
+- Testability at all layers
+- Technology independence
+- Future microservices extraction capability
+
+## Clean Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           CLEAN ARCHITECTURE                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                        INTERFACE LAYER                                │  │
+│  │   (HTTP Handlers, Middleware, WebSocket, CLI)                        │  │
+│  │                        ↑ Depends on Application                       │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                    ↑                                         │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                      APPLICATION LAYER                                │  │
+│  │   (Services, Use Cases, DTOs, Event Handlers)                        │  │
+│  │                        ↑ Depends on Domain                            │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                    ↑                                         │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                         DOMAIN LAYER                                  │  │
+│  │   (Entities, Value Objects, Domain Services, Repository Interfaces)  │  │
+│  │                        ↑ No external dependencies                     │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                    ↑                                         │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │                      INFRASTRUCTURE LAYER                             │  │
+│  │   (Database, Cache, Message Bus, External APIs)                      │  │
+│  │                        ↓ Implements Domain Interfaces                 │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ## Project Structure
 
@@ -10,312 +49,355 @@ The Blytz.live backend follows Clean Architecture principles with a well-structu
 backend/
 ├── cmd/
 │   └── server/
-│       └── main.go              # Application entry point
-├── internal/                    # Private application code
-│   ├── auth/                   # Authentication module
-│   │   ├── handlers.go         # HTTP request handlers
-│   │   ├── jwt.go             # JWT token management
-│   │   ├── models.go          # Auth DTOs and request/response models
-│   │   └── service.go         # Authentication business logic
-│   ├── common/                 # Shared utilities
-│   │   └── models.go         # Base models and common types
-│   ├── config/                 # Configuration management
-│   │   └── config.go         # Environment-based configuration
-│   ├── database/               # Database layer
-│   │   └── connection.go     # Database connections and setup
-│   ├── middleware/             # HTTP middleware
-│   │   ├── middleware.go      # General middleware (CORS, logging, recovery)
-│   │   └── rate_limiter.go  # Rate limiting middleware
-│   └── models/                # Data models
-│       └── models.go         # Core domain models
-├── pkg/                      # Public packages (future use)
-├── tests/                    # Test files (future)
-├── docker-compose.yml         # Development environment
-├── Dockerfile               # Production container
-├── go.mod                   # Go module definition
-└── .env.example             # Environment template
+│       └── main.go                    # Application entry point
+├── internal/
+│   ├── app/                          # Application composition root
+│   │   ├── app.go                    # Application container & dependency injection
+│   │   └── stubs.go                  # Temporary stubs for missing implementations
+│   ├── domain/                       # Domain layer (business entities)
+│   │   ├── auction/                  # Auction domain
+│   │   │   └── auction.go            # Auction entity, value objects
+│   │   └── user/                     # User domain
+│   │       └── user.go               # User entity, token manager interface
+│   ├── application/                  # Application layer (use cases)
+│   │   ├── auction/                  # Auction application services
+│   │   │   └── service.go            # Auction use cases
+│   │   └── auth/                     # Auth application services
+│   │       └── service.go            # Authentication use cases
+│   ├── infrastructure/               # Infrastructure layer (implementations)
+│   │   ├── cache/redis/              # Redis cache implementation
+│   │   │   ├── cache.go              # Redis client wrapper
+│   │   │   └── auction.go            # Auction cache implementation
+│   │   ├── http/                     # HTTP infrastructure
+│   │   │   ├── jwt.go                # JWT token manager implementation
+│   │   │   └── server.go             # HTTP server setup
+│   │   ├── messaging/redis/          # Event bus implementation
+│   │   │   └── event_bus.go          # Redis-based event bus
+│   │   ├── persistence/postgres/     # Database repository implementations
+│   │   │   ├── connection.go         # Database connection
+│   │   │   ├── models.go             # GORM models
+│   │   │   ├── auction_repository.go # Auction repository implementation
+│   │   │   └── user_repository.go    # User repository implementation
+│   │   └── websocket/                # WebSocket infrastructure
+│   │       └── hub.go                # WebSocket hub for real-time communication
+│   └── interfaces/                   # Interface adapters
+│       ├── http/handlers/            # HTTP handlers
+│       │   ├── auth.go               # Auth HTTP handlers
+│       │   └── auction.go            # Auction HTTP handlers
+│       └── middleware/               # HTTP middleware
+│           ├── auth.go               # Authentication middleware
+│           └── ratelimit.go          # Rate limiting middleware
+├── pkg/                              # Public packages
+│   └── errors/                       # Custom error types
+├── go.mod                            # Go module definition
+├── go.sum                            # Go dependencies
+└── README.md                         # Backend README
 ```
 
-## Architecture Layers
+## Layer Details
 
-### 1. Presentation Layer (Handlers)
-- **Location**: `internal/*/handlers.go`
-- **Purpose**: HTTP request/response handling
-- **Responsibilities**:
-  - Parse incoming HTTP requests
-  - Validate input data
-  - Call appropriate service methods
-  - Format HTTP responses
-  - Handle HTTP-specific concerns (status codes, headers)
+### 1. Domain Layer (`internal/domain/`)
+**The heart of the application - no external dependencies.**
 
-### 2. Business Logic Layer (Services)
-- **Location**: `internal/*/service.go`
-- **Purpose**: Core business logic implementation
-- **Responsibilities**:
-  - Implement business rules
-  - Coordinate between different entities
-  - Handle complex workflows
-  - Maintain data integrity
-  - Manage transactions
+- **Entities**: Core business objects (User, Auction, Product)
+- **Value Objects**: Immutable objects with no identity (Money, Address)
+- **Domain Services**: Complex business logic that doesn't fit in entities
+- **Repository Interfaces**: Define data access contracts
+- **Domain Events**: Business events that occur within the domain
 
-### 3. Data Access Layer (Models/Database)
-- **Location**: `internal/models/`, `internal/database/`
-- **Purpose**: Data persistence and retrieval
-- **Responsibilities**:
-  - Define data structures
-  - Handle database operations
-  - Manage data relationships
-  - Ensure data consistency
+**Key Files:**
+- `domain/auction/auction.go` - Auction entity with business rules
+- `domain/user/user.go` - User entity with token manager interface
 
-### 4. Infrastructure Layer (Config/Middleware)
-- **Location**: `internal/config/`, `internal/middleware/`
-- **Purpose**: Cross-cutting concerns
-- **Responsibilities**:
-  - Configuration management
-  - HTTP middleware (CORS, logging, rate limiting)
-  - Third-party integrations
+**Rules:**
+- No imports from other layers
+- Pure business logic
+- Framework-agnostic
+
+### 2. Application Layer (`internal/application/`)
+**Orchestrates use cases and coordinates domain objects.**
+
+- **Application Services**: Implement use cases
+- **DTOs**: Data transfer objects for input/output
+- **Event Handlers**: Handle domain events
+- **Transaction Management**: Coordinate transactions across multiple aggregates
+
+**Key Files:**
+- `application/auction/service.go` - Auction use cases (create, bid, end)
+- `application/auth/service.go` - Authentication use cases (login, register)
+
+**Rules:**
+- Depends only on Domain layer
+- Contains no business rules (orchestrates domain)
+- Framework-agnostic
+
+### 3. Infrastructure Layer (`internal/infrastructure/`)
+**Implements interfaces defined in Domain layer.**
+
+- **Persistence**: Database repositories (PostgreSQL/GORM)
+- **Cache**: Redis cache implementations
+- **Messaging**: Event bus implementations (Redis Pub/Sub)
+- **External APIs**: Third-party service integrations
+- **WebSocket**: Real-time communication infrastructure
+
+**Key Files:**
+- `infrastructure/persistence/postgres/*` - Repository implementations
+- `infrastructure/cache/redis/*` - Cache implementations
+- `infrastructure/http/jwt.go` - JWT token manager implementation
+- `infrastructure/websocket/hub.go` - WebSocket hub
+
+**Rules:**
+- Implements domain interfaces
+- Contains no business logic
+- Technology-specific code
+
+### 4. Interface Layer (`internal/interfaces/`)
+**Adapts external interfaces to application layer.**
+
+- **HTTP Handlers**: REST API endpoints
+- **Middleware**: Cross-cutting concerns (auth, rate limiting)
+- **WebSocket Handlers**: Real-time connection handlers
+- **CLI Commands**: Command-line interfaces
+
+**Key Files:**
+- `interfaces/http/handlers/auth.go` - Auth HTTP handlers
+- `interfaces/http/handlers/auction.go` - Auction HTTP handlers
+- `interfaces/middleware/auth.go` - Auth middleware
+
+**Rules:**
+- Depends on Application layer
+- Handles HTTP-specific concerns only
+- No business logic
+
+### 5. Application Composition (`internal/app/`)
+**Wires all dependencies together.**
+
+- **Dependency Injection**: Creates and connects all components
+- **Configuration**: Application configuration
+- **Lifecycle Management**: Startup and shutdown
+
+**Key Files:**
+- `app/app.go` - Application container with DI
+
+## Dependency Rule
+
+**Dependencies point inward (Domain ← Application ← Infrastructure/Interface):**
+
+```go
+// Domain layer - no external dependencies
+package domain
+
+type AuctionRepository interface {
+    GetByID(ctx context.Context, id uuid.UUID) (*Auction, error)
+    Save(ctx context.Context, auction *Auction) error
+}
+
+// Application layer - depends on Domain
+package application
+
+type AuctionService struct {
+    repo domain.AuctionRepository  // Interface from domain
+}
+
+// Infrastructure layer - implements Domain interface
+package persistence
+
+type AuctionRepository struct {
+    db *gorm.DB
+}
+
+func (r *AuctionRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Auction, error) {
+    // Implementation using GORM
+}
+```
+
+## Data Flow
+
+### HTTP Request Flow
+1. **HTTP Request** → Interface Layer (Handler)
+2. **Handler** → Validates input → Calls Application Service
+3. **Application Service** → Orchestrates → Calls Domain methods
+4. **Domain** → Executes business logic
+5. **Repository Interface** → Implemented by Infrastructure
+6. **Infrastructure** → Persists to PostgreSQL / Redis
+7. **Response** flows back through layers
+
+### WebSocket Flow (Real-time Bidding)
+1. **Client** → WebSocket connection
+2. **WebSocket Hub** → (Infrastructure layer)
+3. **Event Bus** → Publishes bid events
+4. **Application Service** → Processes bid
+5. **Domain** → Validates bid rules
+6. **Broadcast** → All connected clients receive update
+
+## Technology Stack
+
+### Backend
+- **Language**: Go 1.23+
+- **Framework**: Gin (HTTP routing)
+- **ORM**: GORM (database abstraction)
+- **Database**: PostgreSQL 17.7
+- **Cache**: Redis 8+
+- **WebSocket**: Gorilla WebSocket
+- **Events**: Redis Pub/Sub
+
+### Domain Entities
+
+```go
+// domain/auction/auction.go
+type Auction struct {
+    ID          uuid.UUID
+    SellerID    uuid.UUID
+    ProductID   uuid.UUID
+    Title       string
+    Description string
+    StartingBid decimal.Decimal
+    ReservePrice decimal.Decimal
+    Status      AuctionStatus
+    StartTime   time.Time
+    EndTime     time.Time
+    CreatedAt   time.Time
+    UpdatedAt   time.Time
+    Bids        []Bid
+}
+
+type Bid struct {
+    ID        uuid.UUID
+    AuctionID uuid.UUID
+    BidderID  uuid.UUID
+    Amount    decimal.Decimal
+    CreatedAt time.Time
+}
+```
 
 ## Design Principles
 
 ### 1. Clean Architecture
-- **Dependency Inversion**: High-level modules don't depend on low-level modules
-- **Separation of Concerns**: Each layer has a single responsibility
-- **Testability**: Business logic is isolated from external concerns
-- **Independence**: Framework can be swapped without changing business logic
+- **Dependency Inversion**: Dependencies point inward
+- **Separation of Concerns**: Each layer has single responsibility
+- **Testability**: Each layer can be tested in isolation
+- **Independence**: Frameworks/UI can be swapped
 
 ### 2. Domain-Driven Design
-- **Ubiquitous Language**: Models reflect business terminology
-- **Bounded Contexts**: Each module has clear boundaries
-- **Rich Models**: Models contain both data and behavior
+- **Ubiquitous Language**: Code matches business terms
+- **Bounded Contexts**: Clear domain boundaries
+- **Rich Domain Models**: Entities contain behavior
+- **Domain Events**: Loose coupling between aggregates
 
 ### 3. SOLID Principles
-- **Single Responsibility**: Each class has one reason to change
+- **Single Responsibility**: One reason to change per class
 - **Open/Closed**: Open for extension, closed for modification
-- **Liskov Substitution**: Subtypes must be substitutable for base types
-- **Interface Segregation**: Clients shouldn't depend on unused interfaces
-- **Dependency Inversion**: Depend on abstractions, not concretions
-
-## Data Flow
-
-### Request Flow
-1. **HTTP Request** → Middleware → Handler
-2. **Handler** → Validation → Service
-3. **Service** → Business Logic → Database
-4. **Database** → GORM → Database Engine
-5. **Response** flows back through the same layers
-
-### Authentication Flow
-1. Client sends credentials to `/auth/login`
-2. Handler validates request format
-3. Service verifies credentials against database
-4. JWT manager generates tokens
-5. Handler returns tokens to client
-6. Client includes token in subsequent requests
-7. Authentication middleware validates token
-8. Request proceeds to protected handlers
-
-## Technology Choices
-
-### Go
-- **Reasons**: Performance, concurrency, simplicity
-- **Benefits**:
-  - Strong typing and compiled performance
-  - Built-in concurrency primitives
-  - Excellent standard library
-  - Fast compile times
-  - Great ecosystem for web development
-
-### Gin Framework
-- **Reasons**: Performance, simplicity, middleware support
-- **Benefits**:
-  - Fast HTTP router
-  - Extensive middleware ecosystem
-  - JSON binding/validation
-  - Error handling
-  - Good documentation
-
-### GORM ORM
-- **Reasons**: Type safety, migrations, relationships
-- **Benefits**:
-  - Type-safe database operations
-  - Auto-migration support
-  - Relationship management
-  - Soft delete support
-  - Multiple database backends
-
-### SQLite (Demo) / PostgreSQL (Production)
-- **SQLite**: Easy development, no setup required
-- **PostgreSQL**: Production-ready with advanced features
-  - ACID compliance
-  - Advanced indexing
-  - JSON support
-  - Full-text search
-  - Replication support
-
-### Redis
-- **Uses**: Caching, rate limiting, future session management
-- **Benefits**:
-  - In-memory performance
-  - Data structures support
-  - Persistence options
-  - Clustering support
+- **Liskov Substitution**: Subtypes fully substitutable
+- **Interface Segregation**: Small, focused interfaces
+- **Dependency Inversion**: Depend on abstractions
 
 ## Security Architecture
 
 ### Authentication
-- **JWT Tokens**: Stateless authentication with expiry
-- **Password Hashing**: bcrypt with adaptive work factor
+- **JWT Tokens**: Stateless with access/refresh tokens
+- **Token Manager Interface**: Defined in Domain layer
+- **JWT Implementation**: In Infrastructure layer
 - **Role-Based Access**: Buyer, seller, admin roles
-- **Token Refresh**: Secure refresh token flow
 
 ### Input Validation
-- **Request Binding**: Gin's built-in validation
-- **Sanitization**: SQL injection prevention via GORM
-- **Rate Limiting**: IP-based request throttling
+- **Handler Layer**: HTTP request validation
+- **Domain Layer**: Business rule validation
+- **Sanitization**: Prevent SQL injection via GORM
+- **Rate Limiting**: Middleware in Interface layer
 
 ### Data Protection
-- **Sensitive Fields**: Password hashes never exposed
-- **HTTPS Required**: In production (enforced by reverse proxy)
-- **Environment Variables**: All secrets in environment
-
-## Database Schema
-
-### Core Entities
-```sql
-users (id, email, password_hash, role, first_name, last_name, avatar_url, phone, email_verified, last_login_at, created_at, updated_at, deleted_at)
-
-categories (id, name, slug, description, image_url, parent_id, sort_order, is_active, created_at, updated_at, deleted_at)
-
-products (id, seller_id, category_id, title, description, condition, starting_price, reserve_price, buy_now_price, images, video_url, specifications, shipping_info, status, featured, view_count, created_at, updated_at, deleted_at)
-```
-
-### Relationships
-- Users → Products (One-to-Many: seller)
-- Categories → Categories (Self-referencing: parent/child)
-- Categories → Products (One-to-Many)
-- Users → Auctions (One-to-Many: participant/auctioneer)
-
-### Indexes
-- `users.email` (unique)
-- `categories.slug` (unique)
-- `products.seller_id`
-- `products.category_id`
-- `products.status`
-- Soft delete indexes on all tables
-
-## Performance Considerations
-
-### Database Optimization
-- **Connection Pooling**: GORM manages connection pool
-- **Query Optimization**: Proper indexing strategy
-- **Pagination**: Prevent large result sets
-- **Eager Loading**: Avoid N+1 query problems
-
-### Caching Strategy
-- **Redis Layer**: Cache frequently accessed data
-- **Session Storage**: User sessions in Redis
-- **Rate Limiting**: Distributed rate limiting counters
-
-### HTTP Performance
-- **JSON Compression**: Gzip middleware
-- **Static Assets**: CDN for images/files
-- **HTTP/2**: Supported by reverse proxy
-
-## Scalability Planning
-
-### Current Monolith
-- **Horizontal Scaling**: Multiple app instances
-- **Database Scaling**: Read replicas, connection pooling
-- **Load Balancing**: At reverse proxy level
-
-### Future Microservices (if needed)
-Extraction order:
-1. **Authentication Service**: Stateless, well-defined boundaries
-2. **Notification Service**: I/O heavy, different scaling needs
-3. **File Upload Service**: Different infrastructure requirements
-4. **Analytics Service**: ML/recommendations, different data patterns
-
-### Database Scaling
-- **Read Replicas**: For read-heavy workloads
-- **Connection Pooling**: PgBouncer for connection management
-- **Partitioning**: For large tables (products, auctions)
-
-## Monitoring and Observability
-
-### Logging
-- **Structured Logging**: JSON format with logrus
-- **Log Levels**: Debug, info, warn, error
-- **Context Preservation**: Request IDs across services
-
-### Metrics (Planned)
-- **Prometheus**: Application metrics
-- **Grafana**: Visualization dashboards
-- **Health Checks**: Service health endpoints
-
-### Error Tracking (Planned)
-- **Sentry**: Error aggregation and alerting
-- **Correlation IDs**: Track requests across services
+- **Sensitive Fields**: Passwords never exposed
+- **HTTPS**: Enforced in production
+- **Environment Variables**: Secrets externalized
 
 ## Testing Strategy
 
 ### Unit Tests
-- **Service Layer**: Business logic testing
-- **Model Layer**: Data validation testing
-- **Utility Functions**: Pure function testing
+```
+domain/         # Test business logic without dependencies
+application/    # Test use cases with mocked repositories
+```
 
 ### Integration Tests
-- **API Endpoints**: Full request/response cycle
-- **Database Operations**: With test database
-- **Authentication**: Full auth flow testing
+```
+infrastructure/ # Test with real database/cache
+interfaces/     # Test HTTP handlers with test server
+```
 
-### Performance Tests
-- **Load Testing**: Concurrent user simulation
-- **Database Stress**: Large dataset operations
-- **Memory Profiling**: Resource usage optimization
+### Test Isolation
+```go
+// Domain tests - no dependencies
+func TestAuction_PlaceBid(t *testing.T) {
+    auction := domain.NewAuction(...)
+    err := auction.PlaceBid(bid)
+    // Assert
+}
 
-## Deployment Architecture
+// Application tests - mocked repositories
+func TestAuctionService_PlaceBid(t *testing.T) {
+    mockRepo := &MockAuctionRepository{}
+    service := application.NewAuctionService(mockRepo, ...)
+    // Test
+}
+```
 
-### Development
-- **Docker Compose**: Local development environment
-- **In-Memory Database**: SQLite for quick setup
-- **Hot Reload**: Go's built-in reload capabilities
+## Migration from Old Structure
 
-### Production (Planned)
-- **Containerization**: Docker containers
-- **Orchestration**: Kubernetes or ECS
-- **Database**: Managed PostgreSQL (AWS RDS)
-- **Cache**: Managed Redis (AWS ElastiCache)
-- **Load Balancer**: Application Load Balancer
-- **CDN**: CloudFront for static assets
+The codebase was migrated from a **module-based structure** to **Clean Architecture**:
 
-## Configuration Management
+| Old Structure | New Structure | Purpose |
+|--------------|---------------|---------|
+| `internal/auth/` | `domain/user/` + `application/auth/` | Separated domain from use cases |
+| `internal/models/` | `internal/domain/*/` | Domain entities with behavior |
+| `internal/database/` | `infrastructure/persistence/` | Repository implementations |
+| `internal/cache/` | `infrastructure/cache/` | Cache implementations |
+| `internal/middleware/` | `interfaces/middleware/` | HTTP-specific middleware |
+| `internal/handlers/` | `interfaces/http/handlers/` | HTTP handlers |
 
-### Environment Variables
-- **Development**: `.env` file
-- **Production**: Environment variables or secrets manager
-- **Validation**: Required variables checked at startup
+## Benefits of Clean Architecture
 
-### Feature Flags (Planned)
-- **Gradual Rollouts**: Feature toggles
-- **A/B Testing**: Experimentation framework
-- **Emergency Controls**: Kill switches for features
+1. **Testability**: Domain logic tested without database/HTTP
+2. **Flexibility**: Swap PostgreSQL for MongoDB without touching domain
+3. **Clarity**: Clear boundaries between business and technical concerns
+4. **Maintainability**: Changes isolated to specific layers
+5. **Future-Proof**: Easy to extract microservices later
 
-## Future Architecture Considerations
+## Current Implementation Status
 
-### Event-Driven Architecture
-- **Message Queues**: Redis Streams or RabbitMQ
-- **Event Sourcing**: For auction bidding history
-- **CQRS**: Read/write model separation
+✅ **Completed:**
+- Domain layer (User, Auction entities)
+- Application layer (Auth, Auction services)
+- Infrastructure layer (Postgres, Redis, WebSocket)
+- Interface layer (HTTP handlers, middleware)
+- Dependency injection in app.go
 
-### Real-Time Features
-- **WebSockets**: Gorilla WebSocket for chat/bidding
-- **LiveKit**: Video streaming integration
-- **Server-Sent Events**: One-way real-time updates
+📋 **TODO:**
+- Product domain (was in old structure, needs migration)
+- Cart domain
+- Order domain
+- Payment domain
+- Address domain
+- Complete auction WebSocket integration
 
-### Third-Party Integrations
-- **Payment Gateways**: Stripe, PayPal integration
-- **File Storage**: AWS S3 or similar
-- **Email Service**: SendGrid or AWS SES
-- **SMS Service**: Twilio for notifications
+## Development Guidelines
 
-This architecture provides a solid foundation for the Blytz.live marketplace while maintaining flexibility for future growth and evolution.
+### Adding a New Feature
+
+1. **Domain First**: Define entities and repository interfaces in `domain/`
+2. **Application Second**: Implement use cases in `application/`
+3. **Infrastructure Third**: Create repository implementations
+4. **Interface Last**: Add HTTP handlers
+
+### Example: Adding Product Catalog
+
+```
+1. domain/product/product.go          # Product entity, repository interface
+2. application/product/service.go     # Product use cases
+3. infrastructure/persistence/postgres/product_repository.go
+4. interfaces/http/handlers/product.go # HTTP handlers
+5. internal/app/app.go                # Wire dependencies
+```
+
+---
+
+**This architecture provides a solid foundation for Blytz.live while maintaining flexibility for future evolution.**
