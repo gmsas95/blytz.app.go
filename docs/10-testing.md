@@ -305,7 +305,7 @@ func TestAuctionContract(t *testing.T) {
 }
 ```
 
-## Mobile Testing (Flutter)
+## Mobile Testing (React Native)
 
 ### Unit Tests
 ```dart
@@ -394,7 +394,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:blytz/main.dart' as app;
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsReact NativeBinding.ensureInitialized();
   
   group('End-to-End Tests', () {
     test('user can login and view auctions', () async {
@@ -510,9 +510,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-      - run: flutter pub get
-      - run: flutter test --coverage
+      - uses: subosito/react-native-action@v2
+      - run: react-native pub get
+      - run: react-native test --coverage
 ```
 
 ## Testing Checklist

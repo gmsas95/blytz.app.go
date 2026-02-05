@@ -11,7 +11,7 @@ Blytz uses a modern microservices-oriented architecture with clean separation be
 │                                    CLIENT LAYER                                          │
 ├─────────────────────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐               │
-│  │   Next.js Web App   │  │  Flutter Mobile App │  │  LiveKit Client SDK │               │
+│  │   Next.js Web App   │  │  React Native Mobile App │  │  LiveKit Client SDK │               │
 │  │   (Port 3000)       │  │  (iOS/Android)      │  │  (Video/Audio)      │               │
 │  │                     │  │                     │  │                     │               │
 │  │ - Product browsing  │  │ - Native camera     │  │ - Stream publishing │               │
@@ -223,9 +223,9 @@ backend/
 └── drizzle/              # Database migrations
 ```
 
-### Mobile (Flutter)
+### Mobile (React Native)
 
-**Framework:** Flutter 3+
+**Framework:** React Native 3+
 **Language:** Dart
 **State Management:** Riverpod
 **Architecture:** Clean Architecture
@@ -319,7 +319,7 @@ mobile/
 
 **Components:**
 - LiveKit Server (self-hosted or cloud)
-- LiveKit Client SDK (JS, Flutter)
+- LiveKit Client SDK (JS, React Native)
 
 ### NinjaVan (Logistics)
 **Integration Type:** REST API
@@ -365,11 +365,11 @@ mobile/
 
 ### Live Stream Flow
 ```
-1. Seller clicks "Go Live" in Flutter app
+1. Seller clicks "Go Live" in React Native app
 2. LiveKit client creates room
 3. Stream record created in PostgreSQL
 4. Buyers receive push notification
-5. Buyers join via Next.js or Flutter
+5. Buyers join via Next.js or React Native
 6. LiveKit establishes WebRTC connections
 7. Chat messages via Socket.io
 8. Stream recording saved to R2

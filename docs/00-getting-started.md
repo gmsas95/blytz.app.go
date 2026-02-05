@@ -17,7 +17,8 @@ Blytz is a **livestream ecommerce and auction platform** that enables:
 ┌─────────────────────────────────────────────────────────────┐
 │  CLIENT LAYER                                                │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Next.js    │  │  Flutter    │  │  LiveKit Client     │  │
+│  │  Next.js    │  │  React Native    │  │  LiveKit Client     │  │
+│  │  (Web)      │  │  (Expo Mobile)   │  │  (Streaming)        │  │
 │  │  (Web)      │  │  (Mobile)   │  │  (Streaming)        │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └──────────────────────────────┬──────────────────────────────┘
@@ -80,9 +81,9 @@ Blytz is a **livestream ecommerce and auction platform** that enables:
 5. [19-security-guidelines.md](19-security-guidelines.md) - Security practices
 
 ### Path 4: Mobile Developer
-**Goal:** Build the Flutter app
+**Goal:** Build the React Native (Expo) app
 
-1. [mobile/architecture.md](mobile/architecture.md) - Flutter structure
+1. [mobile/architecture.md](mobile/architecture.md) - React Native Expo structure
 2. [04-api-specifications.md](04-api-specifications.md) - API integration
 3. [07-navigation.md](07-navigation.md) - Screen flow
 4. [integrations/livekit.md](integrations/livekit.md) - Streaming integration
@@ -196,9 +197,9 @@ cd frontend && npm run build       # Production build
 cd frontend && npm test            # Run tests
 
 # Mobile
-cd mobile && flutter run           # Run on device
-cd mobile && flutter build apk     # Build Android
-cd mobile && flutter build ios     # Build iOS
+cd mobile && react-native run           # Run on device
+cd mobile && react-native build apk     # Build Android
+cd mobile && react-native build ios     # Build iOS
 ```
 
 ### Integration Keys (Required)

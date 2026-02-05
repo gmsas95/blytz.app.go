@@ -55,8 +55,8 @@ Welcome to the Blytz livestream ecommerce platform documentation.
 - [Frontend Architecture](frontend/architecture.md) - Next.js App Router structure
 - [Component Library](frontend/components.md) - Reusable UI components
 
-### Mobile (Flutter)
-- [Mobile Architecture](mobile/architecture.md) - Flutter project structure
+### Mobile (React Native with Expo)
+- [Mobile Architecture](mobile/architecture.md) - React Native Expo project structure
 - [Mobile Navigation](mobile/navigation.md) - Routing and navigation
 
 ### Integrations
@@ -71,7 +71,7 @@ Welcome to the Blytz livestream ecommerce platform documentation.
 |-------|------------|---------|
 | Frontend | Next.js 15+ | React web application |
 | Backend | Go 1.23+ / Bun | API server, business logic |
-| Mobile | Flutter 3+ | iOS/Android apps |
+| Mobile | React Native 0.72+ (Expo) | iOS/Android apps |
 | Database | PostgreSQL 17+ | Primary data storage |
 | Cache | Redis 8+ | Sessions, real-time data |
 | Storage | Cloudflare R2 | Image/video storage |
@@ -95,8 +95,8 @@ npm run dev
 
 # Mobile
 cd mobile
-flutter pub get
-flutter run
+react-native pub get
+react-native run
 ```
 
 ---

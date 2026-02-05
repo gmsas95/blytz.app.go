@@ -13,7 +13,7 @@ blytz.app/
 │
 ├── frontend/                    # Next.js application
 ├── backend/                     # Go/Bun API
-├── mobile/                      # Flutter app
+├── mobile/                      # React Native app
 └── infrastructure/              # Terraform/k8s configs
 ```
 
@@ -196,62 +196,88 @@ backend/
 └── Dockerfile
 ```
 
-## Mobile Structure (Flutter)
+## Mobile Structure (React Native with Expo)
 
 ```
 mobile/
-├── lib/
-│   ├── main.dart               # Entry point
-│   ├── app.dart                # App widget
-│   │
-│   ├── core/                   # Core utilities
-│   │   ├── constants/
-│   │   ├── theme/
-│   │   ├── utils/
-│   │   └── extensions/
-│   │
-│   ├── data/                   # Data layer
-│   │   ├── models/            # Data models
-│   │   ├── repositories/      # Repository implementations
-│   │   ├── datasources/       # API, local storage
-│   │   └── dto/               # Data transfer objects
-│   │
-│   ├── domain/                 # Domain layer
-│   │   ├── entities/          # Business entities
-│   │   ├── repositories/      # Repository interfaces
-│   │   └── usecases/          # Use cases
-│   │
-│   ├── presentation/           # Presentation layer
-│   │   ├── bloc/              # BLoC pattern
-│   │   │   ├── auth/
-│   │   │   ├── product/
-│   │   │   ├── auction/
-│   │   │   └── ...
-│   │   ├── pages/             # Screens
-│   │   │   ├── auth/
-│   │   │   ├── home/
-│   │   │   ├── products/
-│   │   │   ├── auctions/
-│   │   │   ├── streams/
-│   │   │   ├── cart/
-│   │   │   ├── orders/
-│   │   │   └── profile/
-│   │   ├── widgets/           # Reusable widgets
-│   │   └── providers/         # Riverpod providers
-│   │
-│   └── services/               # Services
-│       ├── api_service.dart
-│       ├── auth_service.dart
-│       ├── socket_service.dart
-│       ├── livekit_service.dart
-│       └── notification_service.dart
+├── app/                        # Expo Router app directory
+│   ├── (auth)/                 # Auth group
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   └── _layout.tsx
+│   ├── (tabs)/                 # Main tab navigation
+│   │   ├── index.tsx           # Home/Feed
+│   │   ├── auctions.tsx
+│   │   ├── products.tsx
+│   │   ├── streams.tsx
+│   │   ├── profile.tsx
+│   │   └── _layout.tsx
+│   ├── auctions/
+│   │   ├── [id].tsx            # Auction detail
+│   │   └── _layout.tsx
+│   ├── products/
+│   │   ├── [slug].tsx          # Product detail
+│   │   └── _layout.tsx
+│   ├── streams/
+│   │   ├── [id].tsx            # Stream viewer
+│   │   └── _layout.tsx
+│   ├── _layout.tsx             # Root layout
+│   └── +html.tsx               # HTML wrapper
 │
-├── android/                    # Android config
-├── ios/                        # iOS config
-├── test/                       # Unit tests
-├── integration_test/           # Integration tests
-├── pubspec.yaml
-└── analysis_options.yaml
+├── src/
+│   ├── components/             # React components
+│   │   ├── ui/                # Base UI components
+│   │   ├── auction/           # Auction components
+│   │   ├── product/           # Product components
+│   │   ├── stream/            # Stream components
+│   │   └── common/            # Shared components
+│   │
+│   ├── hooks/                  # Custom hooks
+│   │   ├── use-auth.ts
+│   │   ├── use-auction.ts
+│   │   ├── use-product.ts
+│   │   ├── use-stream.ts
+│   │   └── use-api.ts
+│   │
+│   ├── stores/                 # Zustand stores
+│   │   ├── auth-store.ts
+│   │   ├── auction-store.ts
+│   │   └── ui-store.ts
+│   │
+│   ├── services/               # API services
+│   │   ├── api.ts             # Axios/fetch client
+│   │   ├── auth.ts
+│   │   ├── auction.ts
+│   │   ├── product.ts
+│   │   ├── socket.ts          # Socket.io
+│   │   └── livekit.ts         # LiveKit SDK
+│   │
+│   ├── utils/                  # Utilities
+│   │   ├── constants.ts
+│   │   ├── helpers.ts
+│   │   └── validation.ts
+│   │
+│   └── types/                  # TypeScript types
+│       ├── index.ts
+│       ├── user.ts
+│       ├── product.ts
+│       └── auction.ts
+│
+├── assets/                     # Static assets
+│   ├── images/
+│   ├── fonts/
+│   └── icons/
+│
+├── components/                 # External components (if any)
+├── constants/                  # App constants
+├── hooks/                      # Global hooks
+│
+├── app.json                    # Expo config
+├── babel.config.js
+├── metro.config.js
+├── tailwind.config.js          # NativeWind
+├── tsconfig.json
+└── package.json
 ```
 
 ## File Naming Conventions
@@ -278,7 +304,7 @@ Methods:         PascalCase (public) (GetByID)
 Constants:       PascalCase          (DefaultTimeout)
 ```
 
-### Mobile (Flutter/Dart)
+### Mobile (React Native/Dart)
 ```
 Files:           snake_case.dart     (auction_card.dart)
 Classes:         PascalCase          (AuctionCard)

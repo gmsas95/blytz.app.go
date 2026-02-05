@@ -23,7 +23,7 @@ Development roadmap for the Blytz livestream ecommerce platform.
 - [ ] Layout components (navbar, footer)
 
 ### Mobile
-- [ ] Flutter project setup
+- [ ] React Native project setup
 - [ ] Authentication screens
 - [ ] Auth service integration
 
@@ -363,7 +363,7 @@ Development roadmap for the Blytz livestream ecommerce platform.
 | LiveKit complexity | Start with cloud version, self-host later |
 | Stripe FPX delays | Start with cards, add FPX in parallel |
 | NinjaVan API issues | Have backup courier option |
-| Flutter dev speed | Consider React Native if delays occur |
+| React Native dev speed | Consider React Native if delays occur |
 | Performance at scale | Implement caching early (Redis) |
 
 ---
